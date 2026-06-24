@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Job Search CRM</title>
+    <style>
+      :root {
+        --bg: #f4f5f7;
+        --panel: #ffffff;
+        --panel-soft: #fafafa;
+        --ink: #202124;
+        --muted: #6f747c;
+        --line: #dfe3e8;
+        --line-strong: #c8ced6;
+        --teal: #0f8b8d;
+        --teal-soft: #dff4f2;
+        --coral: #d95d39;
+        --coral-soft: #fbe5dc;
+        --violet: #6750a4;
+        --violet-soft: #ebe6ff;
+        --amber: #b7791f;
+        --amber-soft: #fff0c2;
+        --green: #2f855a;
+        --green-soft: #dff4e8;
+        --red: #b42318;
+        --red-soft: #fce4e0;
+        --shadow: 0 14px 36px rgba(38, 43, 52, 0.08);
+        --radius: 8px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        letter-spacing: 0;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        cursor: pointer;
+      }
+
+      .app {
+        display: grid;
+        min-height: 100vh;
+        grid-template-columns: 248px minmax(0, 1fr);
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        border-right: 1px solid var(--line);
+        background: #fbfbfc;
+        padding: 22px 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 40px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .brand-text {
+        min-width: 0;
+      }
+
+      .brand-text strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.15;
+      }
+
+      .brand-text span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .nav {
+        display: grid;
+        gap: 5px;
+      }
+
+      .nav button,
+      .saved-search {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        min-height: 38px;
+        border-radius: 7px;
+        background: transparent;
+        color: #3f454d;
+        padding: 0 10px;
+        text-align: left;
+      }
+
+      .nav button[aria-current="page"] {
+        background: #eceff3;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .icon {
+        display: grid;
+        width: 18px;
+        height: 18px;
+        flex: 0 0 18px;
+        place-items: center;
+        color: currentColor;
+      }
+
+      .icon svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .section-label {
+        margin: 6px 10px 0;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .saved-search {
+        justify-content: space-between;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: 13px;
+      }
+
+      .saved-search b {
+        display: grid;
+        min-width: 24px;
+        height: 22px;
+        place-items: center;
+        border-radius: 999px;
+        background: #eef1f5;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .profile {
+        margin-top: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        padding: 12px;
+      }
+
+      .profile strong {
+        display: block;
+        font-size: 13px;
+      }
+
+      .profile span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .main {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 72px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.88);
+        padding: 14px 24px;
+        backdrop-filter: blur(10px);
+      }
+
+      .page-title {
+        min-width: 220px;
+      }
+
+      .page-title h1 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.15;
+      }
+
+      .page-title p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .search {
+        position: relative;
+        flex: 1;
+        min-width: 220px;
+      }
+
+      .search .icon {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        color: var(--muted);
+      }
+
+      .search input {
+        width: 100%;
+        height: 42px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        padding: 0 12px 0 40px;
+        color: var(--ink);
+        outline: none;
+      }
+
+      .search input:focus {
+        border-color: var(--teal);
+        box-shadow: 0 0 0 3px rgba(15, 139, 141, 0.13);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .icon-button,
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 42px;
+        border-radius: var(--radius);
+        transition:
+          transform 0.16s ease,
+          background 0.16s ease,
+          border-color 0.16s ease;
+      }
+
+      .icon-button {
+        width: 42px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: #3f454d;
+      }
+
+      .primary-button {
+        gap: 8px;
+        min-width: 144px;
+        background: var(--teal);
+        color: #fff;
+        padding: 0 14px;
+        font-weight: 800;
+      }
+
+      .icon-button:hover,
+      .primary-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 344px;
+        gap: 18px;
+        min-width: 0;
+        padding: 20px 24px 24px;
+      }
+
+      .workbench {
+        display: grid;
+        min-width: 0;
+        gap: 18px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .stat {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+        padding: 14px;
+        box-shadow: 0 8px 20px rgba(38, 43, 52, 0.04);
+      }
+
+      .stat span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 27px;
+        line-height: 1;
+      }
+
+      .stat small {
+        display: block;
+        margin-top: 8px;
+        color: var(--green);
+        font-size: 12px;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 58px;
+        border-bottom: 1px solid var(--line);
+        padding: 0 16px;
+      }
+
+      .panel-header h2 {
+        margin: 0;
+        font-size: 15px;
+      }
+
+      .tabs,
+      .segmented {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #f7f8f9;
+        padding: 3px;
+      }
+
+      .tabs button,
+      .segmented button {
+        min-height: 30px;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+        padding: 0 10px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .tabs button[aria-pressed="true"],
+      .segmented button[aria-pressed="true"] {
+        background: #fff;
+        color: var(--ink);
+        box-shadow: 0 1px 4px rgba(32, 33, 36, 0.1);
+      }
+
+      .pipeline {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(142px, 1fr));
+        gap: 10px;
+        overflow-x: auto;
+        padding: 14px;
+      }
+
+      .stage {
+        display: grid;
+        min-height: 206px;
+        align-content: start;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel-soft);
+        padding: 10px;
+      }
+
+      .stage-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: #444a52;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .count {
+        display: grid;
+        min-width: 24px;
+        height: 22px;
+        place-items: center;
+        border-radius: 999px;
+        background: #e8ecf1;
+        color: #535a63;
+        font-size: 12px;
+      }
+
+      .mini-card {
+        display: grid;
+        gap: 7px;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--teal);
+        border-radius: var(--radius);
+        background: #fff;
+        padding: 10px;
+      }
+
+      .mini-card.coral {
+        border-left-color: var(--coral);
+      }
+
+      .mini-card.violet {
+        border-left-color: var(--violet);
+      }
+
+      .mini-card.amber {
+        border-left-color: var(--amber);
+      }
+
+      .mini-card strong {
+        font-size: 13px;
+        line-height: 1.25;
+      }
+
+      .mini-card span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .salary {
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .vacancy-panel {
+        overflow: hidden;
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .filters select {
+        height: 34px;
+        min-width: 132px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        color: #3f454d;
+        padding: 0 10px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 13px 16px;
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        background: #fafbfc;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      td {
+        font-size: 13px;
+      }
+
+      tbody tr.selected {
+        background: #f1fbfa;
+      }
+
+      .company {
+        display: grid;
+        gap: 3px;
+      }
+
+      .company strong {
+        font-size: 13px;
+      }
+
+      .company span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .status,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        border-radius: 999px;
+        padding: 0 9px;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .status.sent {
+        background: var(--teal-soft);
+        color: #096f72;
+      }
+
+      .status.interview {
+        background: var(--violet-soft);
+        color: #55408d;
+      }
+
+      .status.test {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .status.reject {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+
+      .tag {
+        background: #eef1f5;
+        color: #48505a;
+        margin: 2px;
+      }
+
+      .detail {
+        display: grid;
+        min-width: 0;
+        align-content: start;
+        gap: 18px;
+      }
+
+      .detail-panel {
+        overflow: hidden;
+      }
+
+      .detail-main {
+        display: grid;
+        gap: 16px;
+        padding: 16px;
+      }
+
+      .vacancy-head {
+        display: grid;
+        gap: 6px;
+      }
+
+      .vacancy-head h2 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.2;
+      }
+
+      .vacancy-head span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .meta {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fafbfc;
+        padding: 10px;
+      }
+
+      .meta span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .meta strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 13px;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .actions button {
+        display: grid;
+        min-height: 38px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        color: #3f454d;
+      }
+
+      .action-primary {
+        border-color: var(--teal) !important;
+        background: var(--teal) !important;
+        color: #fff !important;
+      }
+
+      .note-box {
+        min-height: 96px;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 10px;
+        outline: none;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 12px;
+      }
+
+      .timeline-item {
+        position: relative;
+        display: grid;
+        gap: 3px;
+        padding-left: 18px;
+      }
+
+      .timeline-item::before {
+        position: absolute;
+        top: 5px;
+        left: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--teal);
+        content: "";
+      }
+
+      .timeline-item strong {
+        font-size: 13px;
+      }
+
+      .timeline-item span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .skills {
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+      }
+
+      .skill-row {
+        display: grid;
+        grid-template-columns: 76px 1fr 34px;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+      }
+
+      .bar {
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #eceff3;
+      }
+
+      .bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--coral);
+      }
+
+      .skill-row:nth-child(2) .bar span {
+        background: var(--teal);
+      }
+
+      .skill-row:nth-child(3) .bar span {
+        background: var(--violet);
+      }
+
+      .skill-row:nth-child(4) .bar span {
+        background: var(--amber);
+      }
+
+      @media (max-width: 1180px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+
+        .detail {
+          grid-template-columns: minmax(0, 1fr) minmax(280px, 0.75fr);
+        }
+      }
+
+      @media (max-width: 920px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: sticky;
+          top: 0;
+          z-index: 4;
+          flex-direction: row;
+          align-items: center;
+          overflow-x: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+          padding: 12px;
+        }
+
+        .brand,
+        .profile,
+        .section-label,
+        .saved-searches {
+          display: none;
+        }
+
+        .nav {
+          display: flex;
+          min-width: max-content;
+        }
+
+        .nav button {
+          width: auto;
+        }
+
+        .topbar {
+          flex-wrap: wrap;
+          padding: 14px;
+        }
+
+        .page-title {
+          min-width: 100%;
+        }
+
+        .content {
+          padding: 14px;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .detail {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .toolbar {
+          width: 100%;
+        }
+
+        .primary-button {
+          flex: 1;
+        }
+
+        .stats {
+          grid-template-columns: 1fr;
+        }
+
+        .panel-header {
+          align-items: flex-start;
+          flex-direction: column;
+          justify-content: center;
+          padding: 12px;
+        }
+
+        .tabs,
+        .segmented {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .tabs button,
+        .segmented button {
+          flex: 1;
+        }
+
+        .meta-grid,
+        .actions {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" aria-label="Основная навигация">
+        <div class="brand">
+          <div class="brand-mark">J</div>
+          <div class="brand-text">
+            <strong>Job CRM</strong>
+            <span>Поиск работы</span>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button type="button" aria-current="page">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3z" /><path d="M13 21h8v-8h-8z" /><path d="M13 3v8h8V3z" /><path d="M3 21h8v-6H3z" /></svg>
+            </span>
+            Дашборд
+          </button>
+          <button type="button">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" /></svg>
+            </span>
+            Вакансии
+          </button>
+          <button type="button">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
+            </span>
+            Аналитика
+          </button>
+          <button type="button">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 6h13" /><path d="M8 12h13" /><path d="M8 18h13" /><path d="M3 6h.01" /><path d="M3 12h.01" /><path d="M3 18h.01" /></svg>
+            </span>
+            Задачи
+          </button>
+          <button type="button">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14H4V6a2 2 0 0 1 2-2h2" /><path d="M8 2h8v4H8z" /></svg>
+            </span>
+            Резюме
+          </button>
+        </nav>
+
+        <div class="section-label">Сохранённые</div>
+        <div class="saved-searches">
+          <button class="saved-search" type="button"><span>Frontend Remote</span><b>12</b></button>
+          <button class="saved-search" type="button"><span>Junior React</span><b>8</b></button>
+          <button class="saved-search" type="button"><span>Тестовые</span><b>3</b></button>
+        </div>
+
+        <div class="profile">
+          <strong>Цель: Frontend Developer</strong>
+          <span>План: 5 откликов в неделю</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="page-title">
+            <h1>Воронка поиска</h1>
+            <p>24 июня · активных вакансий 18</p>
+          </div>
+
+          <label class="search">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m16 16 5 5" /></svg>
+            </span>
+            <input type="search" placeholder="Компания, вакансия, навык" />
+          </label>
+
+          <div class="toolbar">
+            <button class="icon-button" type="button" title="Фильтры" aria-label="Фильтры">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 6h16" /><path d="M7 12h10" /><path d="M10 18h4" /></svg>
+              </span>
+            </button>
+            <button class="icon-button" type="button" title="Импорт" aria-label="Импорт">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></svg>
+              </span>
+            </button>
+            <button class="primary-button" type="button">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+              </span>
+              Вакансия
+            </button>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="workbench" aria-label="Рабочая область">
+            <div class="stats" aria-label="Ключевые показатели">
+              <article class="stat">
+                <span>Отклики</span>
+                <strong>42</strong>
+                <small>+7 за неделю</small>
+              </article>
+              <article class="stat">
+                <span>Интервью</span>
+                <strong>6</strong>
+                <small>14% конверсия</small>
+              </article>
+              <article class="stat">
+                <span>Тестовые</span>
+                <strong>3</strong>
+                <small>2 в работе</small>
+              </article>
+              <article class="stat">
+                <span>Средний ответ</span>
+                <strong>4д</strong>
+                <small>лучше на 1д</small>
+              </article>
+            </div>
+
+            <section class="panel" aria-label="Воронка">
+              <div class="panel-header">
+                <h2>Канбан по статусам</h2>
+                <div class="segmented" aria-label="Период">
+                  <button type="button">7д</button>
+                  <button type="button" aria-pressed="true">30д</button>
+                  <button type="button">Все</button>
+                </div>
+              </div>
+
+              <div class="pipeline">
+                <div class="stage">
+                  <div class="stage-title">Интересно <span class="count">5</span></div>
+                  <article class="mini-card">
+                    <strong>Frontend Developer</strong>
+                    <span>Northwind · React, TS</span>
+                    <div class="row"><span>hh.ru</span><b class="salary">до 180к</b></div>
+                  </article>
+                  <article class="mini-card coral">
+                    <strong>Junior React</strong>
+                    <span>PixelDesk · Tailwind</span>
+                    <div class="row"><span>LinkedIn</span><b class="salary">remote</b></div>
+                  </article>
+                </div>
+
+                <div class="stage">
+                  <div class="stage-title">Отклик <span class="count">7</span></div>
+                  <article class="mini-card violet">
+                    <strong>React Developer</strong>
+                    <span>Orbit Labs · SPA</span>
+                    <div class="row"><span>24 июн</span><b class="salary">160-220к</b></div>
+                  </article>
+                  <article class="mini-card">
+                    <strong>Frontend Engineer</strong>
+                    <span>FinStack · UI-kit</span>
+                    <div class="row"><span>21 июн</span><b class="salary">hybrid</b></div>
+                  </article>
+                </div>
+
+                <div class="stage">
+                  <div class="stage-title">Интервью <span class="count">3</span></div>
+                  <article class="mini-card amber">
+                    <strong>Frontend Intern</strong>
+                    <span>CloudFox · JS</span>
+                    <div class="row"><span>завтра</span><b class="salary">HR</b></div>
+                  </article>
+                </div>
+
+                <div class="stage">
+                  <div class="stage-title">Тестовое <span class="count">2</span></div>
+                  <article class="mini-card coral">
+                    <strong>UI Developer</strong>
+                    <span>Marketly · forms</span>
+                    <div class="row"><span>до 27 июн</span><b class="salary">MVP</b></div>
+                  </article>
+                </div>
+
+                <div class="stage">
+                  <div class="stage-title">Финал <span class="count">1</span></div>
+                  <article class="mini-card">
+                    <strong>Frontend Trainee</strong>
+                    <span>BrightApps · CSS</span>
+                    <div class="row"><span>ожидание</span><b class="salary">оффер?</b></div>
+                  </article>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel vacancy-panel" aria-label="Список вакансий">
+              <div class="panel-header">
+                <h2>Вакансии</h2>
+                <div class="tabs" aria-label="Представление">
+                  <button type="button" aria-pressed="true">Таблица</button>
+                  <button type="button">Список</button>
+                  <button type="button">Архив</button>
+                </div>
+              </div>
+
+              <div class="filters">
+                <select aria-label="Статус">
+                  <option>Все статусы</option>
+                  <option>Отклик</option>
+                  <option>Интервью</option>
+                  <option>Тестовое</option>
+                </select>
+                <select aria-label="Формат">
+                  <option>Любой формат</option>
+                  <option>Удалённо</option>
+                  <option>Гибрид</option>
+                  <option>Офис</option>
+                </select>
+                <select aria-label="Приоритет">
+                  <option>Любой приоритет</option>
+                  <option>Высокий</option>
+                  <option>Средний</option>
+                  <option>Низкий</option>
+                </select>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Компания</th>
+                      <th>Вакансия</th>
+                      <th>Статус</th>
+                      <th>Навыки</th>
+                      <th>Следующий шаг</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="selected">
+                      <td>
+                        <div class="company">
+                          <strong>Orbit Labs</strong>
+                          <span>Remote · продукт</span>
+                        </div>
+                      </td>
+                      <td>React Developer</td>
+                      <td><span class="status sent">Отклик</span></td>
+                      <td><span class="tag">React</span><span class="tag">TypeScript</span></td>
+                      <td>Написать follow-up</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="company">
+                          <strong>CloudFox</strong>
+                          <span>Москва · гибрид</span>
+                        </div>
+                      </td>
+                      <td>Frontend Intern</td>
+                      <td><span class="status interview">Интервью</span></td>
+                      <td><span class="tag">JS</span><span class="tag">CSS</span></td>
+                      <td>Подготовить вопросы</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="company">
+                          <strong>Marketly</strong>
+                          <span>Remote · e-commerce</span>
+                        </div>
+                      </td>
+                      <td>UI Developer</td>
+                      <td><span class="status test">Тестовое</span></td>
+                      <td><span class="tag">Forms</span><span class="tag">API</span></td>
+                      <td>Сдать до 27 июня</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="company">
+                          <strong>LedgerWorks</strong>
+                          <span>Remote · финтех</span>
+                        </div>
+                      </td>
+                      <td>Junior Frontend</td>
+                      <td><span class="status reject">Отказ</span></td>
+                      <td><span class="tag">Vue</span><span class="tag">Tests</span></td>
+                      <td>Разобрать требования</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <aside class="detail" aria-label="Детали вакансии">
+            <section class="panel detail-panel">
+              <div class="panel-header">
+                <h2>Карточка вакансии</h2>
+                <button class="icon-button" type="button" title="Открыть ссылку" aria-label="Открыть ссылку">
+                  <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M7 17 17 7" /><path d="M8 7h9v9" /></svg>
+                  </span>
+                </button>
+              </div>
+
+              <div class="detail-main">
+                <div class="vacancy-head">
+                  <span class="status sent">Отклик отправлен</span>
+                  <h2>React Developer</h2>
+                  <span>Orbit Labs · удалённо · 160-220к</span>
+                </div>
+
+                <div class="meta-grid">
+                  <div class="meta">
+                    <span>Источник</span>
+                    <strong>hh.ru</strong>
+                  </div>
+                  <div class="meta">
+                    <span>Приоритет</span>
+                    <strong>Высокий</strong>
+                  </div>
+                  <div class="meta">
+                    <span>Отклик</span>
+                    <strong>24 июня</strong>
+                  </div>
+                  <div class="meta">
+                    <span>Ответ</span>
+                    <strong>ожидание</strong>
+                  </div>
+                </div>
+
+                <div>
+                  <span class="tag">React</span>
+                  <span class="tag">TypeScript</span>
+                  <span class="tag">REST API</span>
+                  <span class="tag">Tailwind</span>
+                </div>
+
+                <div class="actions">
+                  <button class="action-primary" type="button">Follow-up</button>
+                  <button type="button">Задача</button>
+                  <button type="button">Архив</button>
+                </div>
+
+                <textarea class="note-box" aria-label="Заметки по вакансии">Нужно подчеркнуть учебные проекты, аккуратную вёрстку, работу с состояниями и готовность быстро расти.</textarea>
+
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <strong>Отклик отправлен</strong>
+                    <span>24 июня, 14:20</span>
+                  </div>
+                  <div class="timeline-item">
+                    <strong>Вакансия добавлена</strong>
+                    <span>24 июня, 13:55</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Навыки в вакансиях</h2>
+              </div>
+              <div class="skills">
+                <div class="skill-row">
+                  <span>React</span>
+                  <div class="bar"><span style="width: 86%"></span></div>
+                  <b>86%</b>
+                </div>
+                <div class="skill-row">
+                  <span>CSS</span>
+                  <div class="bar"><span style="width: 72%"></span></div>
+                  <b>72%</b>
+                </div>
+                <div class="skill-row">
+                  <span>TS</span>
+                  <div class="bar"><span style="width: 64%"></span></div>
+                  <b>64%</b>
+                </div>
+                <div class="skill-row">
+                  <span>API</span>
+                  <div class="bar"><span style="width: 51%"></span></div>
+                  <b>51%</b>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
