@@ -4,4 +4,5 @@ from app.models import vacancy  # noqa: F401
 
 
 def init_db() -> None:
+    """Create registered database tables for the MVP SQLite setup."""
     Base.metadata.create_all(bind=engine)
