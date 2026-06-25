@@ -40,11 +40,17 @@ uv run python -B -m pytest
 
 ```text
 GET /health
+
+GET    /api/vacancies
+POST   /api/vacancies
+GET    /api/vacancies/{vacancy_id}
+PATCH  /api/vacancies/{vacancy_id}
+DELETE /api/vacancies/{vacancy_id}
 ```
 
 ## Текущий этап
 
-Этап 2.1: Database Foundation.
+Этап 2.2: Vacancy API.
 
 Сделано:
 
@@ -54,11 +60,13 @@ GET /health
 - `/health` endpoint
 - SQLAlchemy/SQLite foundation
 - модель `Vacancy`
+- Pydantic-схемы для Vacancy API
+- CRUD endpoints для вакансий
 - Ruff
 - Pytest
 - GitHub Actions workflow для backend
 
 Следующий этап:
 
-- CRUD endpoints
-- Pydantic-схемы для Vacancy API
+- Stats API
+- фильтры для списка вакансий

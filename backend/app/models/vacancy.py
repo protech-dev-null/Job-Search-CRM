@@ -8,10 +8,13 @@ from app.db.base import Base
 
 
 def utc_now() -> datetime:
+    """Return the current timezone-aware UTC datetime."""
     return datetime.now(UTC)
 
 
 class Vacancy(Base):
+    """Persisted job vacancy tracked by the CRM."""
+
     __tablename__ = "vacancies"
 
     id: Mapped[str] = mapped_column(
