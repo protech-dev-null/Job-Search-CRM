@@ -6,6 +6,8 @@ Backend API для Job Search CRM.
 
 - Python
 - FastAPI
+- SQLAlchemy
+- SQLite
 - uv
 - Pydantic
 - Ruff
@@ -42,7 +44,7 @@ GET /health
 
 ## Текущий этап
 
-Этап 1: скелет backend-приложения.
+Этап 2.1: Database Foundation.
 
 Сделано:
 
@@ -50,13 +52,13 @@ GET /health
 - настройки приложения
 - CORS для frontend
 - `/health` endpoint
+- SQLAlchemy/SQLite foundation
+- модель `Vacancy`
 - Ruff
 - Pytest
 - GitHub Actions workflow для backend
 
 Следующий этап:
 
-- SQLAlchemy
-- SQLite
-- модель `Vacancy`
 - CRUD endpoints
+- Pydantic-схемы для Vacancy API
