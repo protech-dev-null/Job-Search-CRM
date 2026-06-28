@@ -1,5 +1,5 @@
 # Python
-__pycache__/
+__pycache__
 *.py[cod]
 *.pyo
 .pytest_cache/
@@ -7,6 +7,10 @@ __pycache__/
 .mypy_cache/
 .coverage
 htmlcov/
+
+backend/.venv
+backend/.pytest_cache
+backend/__pycache__
 
 # Virtual environments
 .venv/
