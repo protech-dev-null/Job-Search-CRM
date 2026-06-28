@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Callable
+from collections.abc import Callable
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
