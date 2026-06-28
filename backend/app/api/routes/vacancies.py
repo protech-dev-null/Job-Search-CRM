@@ -1,17 +1,23 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.vacancy import Vacancy
-from app.schemas.vacancy import VacancyCreate, VacancyRead, VacancyUpdate
+from app.schemas.vacancy import (
+    VacancyCreate,
+    VacancyFilters,
+    VacancyRead,
+    VacancyUpdate,
+)
+from app.services.vacancy_service import find_vacancies
 
 router = APIRouter(prefix=f"{settings.api_prefix}/vacancies", tags=["vacancies"])
 
 DbSession = Annotated[Session, Depends(get_db)]
+VacancyFilterParams = Annotated[VacancyFilters, Query()]
 
 
 def get_vacancy_or_404(vacancy_id: str, db: Session) -> Vacancy:
@@ -26,10 +32,9 @@ def get_vacancy_or_404(vacancy_id: str, db: Session) -> Vacancy:
 
 
 @router.get("", response_model=list[VacancyRead])
-def list_vacancies(db: DbSession) -> list[Vacancy]:
-    """List vacancies ordered from newest to oldest."""
-    statement = select(Vacancy).order_by(Vacancy.created_at.desc())
-    return list(db.scalars(statement).all())
+def list_vacancies(db: DbSession, filters: VacancyFilterParams) -> list[Vacancy]:
+    """List vacancies matching optional query filters."""
+    return find_vacancies(db, filters)
 
 
 @router.post(
