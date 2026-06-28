@@ -43,7 +43,7 @@ class WorkFormat(StrEnum):
 
 
 class VacancyFilters(BaseModel):
-    """Optional query parameters for filtering the vacancy list."""
+    """Query parameters for filtering and paginating the vacancy list."""
 
     search: str | None = Field(default=None, max_length=120)
     status: VacancyStatus | None = None
@@ -51,6 +51,8 @@ class VacancyFilters(BaseModel):
     work_format: WorkFormat | None = None
     source: VacancySource | None = None
     skill: str | None = Field(default=None, max_length=80)
+    page: int = Field(default=1, ge=1)
+    page_size: int = Field(default=20, ge=1, le=100)
 
     @field_validator("search", "skill")
     @classmethod
@@ -114,3 +116,13 @@ class VacancyRead(VacancyBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class VacancyPage(BaseModel):
+    """Paginated vacancy list returned by the API."""
+
+    items: list[VacancyRead]
+    total: int
+    page: int
+    page_size: int
+    pages: int

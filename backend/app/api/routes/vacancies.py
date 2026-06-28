@@ -9,6 +9,7 @@ from app.models.vacancy import Vacancy
 from app.schemas.vacancy import (
     VacancyCreate,
     VacancyFilters,
+    VacancyPage,
     VacancyRead,
     VacancyUpdate,
 )
@@ -31,10 +32,19 @@ def get_vacancy_or_404(vacancy_id: str, db: Session) -> Vacancy:
     return vacancy
 
 
-@router.get("", response_model=list[VacancyRead])
-def list_vacancies(db: DbSession, filters: VacancyFilterParams) -> list[Vacancy]:
-    """List vacancies matching optional query filters."""
-    return find_vacancies(db, filters)
+@router.get("", response_model=VacancyPage)
+def list_vacancies(db: DbSession, filters: VacancyFilterParams) -> VacancyPage:
+    """List one page of vacancies matching optional query filters."""
+    vacancies, total = find_vacancies(db, filters)
+    pages = (total + filters.page_size - 1) // filters.page_size
+
+    return VacancyPage(
+        items=[VacancyRead.model_validate(vacancy) for vacancy in vacancies],
+        total=total,
+        page=filters.page,
+        page_size=filters.page_size,
+        pages=pages,
+    )
 
 
 @router.post(
