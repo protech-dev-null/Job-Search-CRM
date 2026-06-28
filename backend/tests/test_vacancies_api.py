@@ -82,8 +82,13 @@ def test_list_vacancies(client: TestClient) -> None:
     response = client.get("/api/vacancies")
 
     assert response.status_code == 200
-    assert len(response.json()) == 1
-    assert response.json()[0]["company"] == "CloudFox"
+    data = response.json()
+    assert data["total"] == 1
+    assert data["page"] == 1
+    assert data["page_size"] == 20
+    assert data["pages"] == 1
+    assert len(data["items"]) == 1
+    assert data["items"][0]["company"] == "CloudFox"
 
 
 def test_read_vacancy(client: TestClient) -> None:
@@ -156,7 +161,7 @@ def test_filter_vacancies_by_status_and_priority(client: TestClient) -> None:
     response = client.get("/api/vacancies?status=applied&priority=high")
 
     assert response.status_code == 200
-    assert {vacancy["company"] for vacancy in response.json()} == {
+    assert {vacancy["company"] for vacancy in response.json()["items"]} == {
         "Orbit Labs",
         "Marketly",
     }
@@ -168,7 +173,7 @@ def test_filter_vacancies_by_work_format_and_source(client: TestClient) -> None:
     response = client.get("/api/vacancies?work_format=hybrid&source=linkedin")
 
     assert response.status_code == 200
-    assert [vacancy["company"] for vacancy in response.json()] == ["CloudFox"]
+    assert [vacancy["company"] for vacancy in response.json()["items"]] == ["CloudFox"]
 
 
 def test_search_vacancies_is_case_insensitive(client: TestClient) -> None:
@@ -177,7 +182,7 @@ def test_search_vacancies_is_case_insensitive(client: TestClient) -> None:
     response = client.get("/api/vacancies?search=mosCOW")
 
     assert response.status_code == 200
-    assert [vacancy["company"] for vacancy in response.json()] == ["CloudFox"]
+    assert [vacancy["company"] for vacancy in response.json()["items"]] == ["CloudFox"]
 
 
 def test_filter_vacancies_by_skill_is_case_insensitive(client: TestClient) -> None:
@@ -186,7 +191,7 @@ def test_filter_vacancies_by_skill_is_case_insensitive(client: TestClient) -> No
     response = client.get("/api/vacancies?skill=react")
 
     assert response.status_code == 200
-    assert {vacancy["company"] for vacancy in response.json()} == {
+    assert {vacancy["company"] for vacancy in response.json()["items"]} == {
         "Orbit Labs",
         "Marketly",
     }
@@ -198,3 +203,49 @@ def test_rejects_invalid_vacancy_filters(client: TestClient) -> None:
 
     assert invalid_status_response.status_code == 422
     assert blank_skill_response.status_code == 422
+
+
+def test_paginate_vacancies(client: TestClient) -> None:
+    """Return requested page together with pagination metadata."""
+    for index in range(5):
+        response = client.post(
+            "/api/vacancies",
+            json={
+                "company": f"Company {index}",
+                "position": "Python Developer",
+            },
+        )
+        assert response.status_code == 201
+
+    response = client.get("/api/vacancies?page=2&page_size=2")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 5
+    assert data["page"] == 2
+    assert data["page_size"] == 2
+    assert data["pages"] == 3
+    assert len(data["items"]) == 2
+
+
+def test_paginate_after_filtering_by_skill(client: TestClient) -> None:
+    """Apply the skill filter before calculating and slicing pages."""
+    create_filter_test_vacancies(client)
+
+    response = client.get("/api/vacancies?skill=react&page=2&page_size=1")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+    assert data["pages"] == 2
+    assert len(data["items"]) == 1
+    assert data["items"][0]["company"] == "Orbit Labs"
+
+
+def test_rejects_invalid_pagination(client: TestClient) -> None:
+    """Reject page numbers and page sizes outside supported bounds."""
+    invalid_page_response = client.get("/api/vacancies?page=0")
+    invalid_page_size_response = client.get("/api/vacancies?page_size=101")
+
+    assert invalid_page_response.status_code == 422
+    assert invalid_page_size_response.status_code == 422

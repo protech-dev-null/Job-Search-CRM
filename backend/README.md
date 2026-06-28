@@ -71,7 +71,12 @@ priority
 work_format
 source
 skill
+page
+page_size
 ```
+
+`page` начинается с `1`. Значение `page_size` по умолчанию равно `20`,
+максимальное значение — `100`.
 
 Пример комбинированного фильтра:
 
@@ -79,9 +84,27 @@ skill
 GET /api/vacancies?status=applied&priority=high&skill=react
 ```
 
+Пример запроса второй страницы:
+
+```text
+GET /api/vacancies?page=2&page_size=10
+```
+
+Ответ списка вакансий:
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "page": 2,
+  "page_size": 10,
+  "pages": 0
+}
+```
+
 ## Текущий этап
 
-Этап 3: Stats API.
+Этап 4: API-контракт списка вакансий.
 
 Сделано:
 
@@ -95,11 +118,13 @@ GET /api/vacancies?status=applied&priority=high&skill=react
 - CRUD endpoints для вакансий
 - статистика по статусам и приоритетам
 - рейтинг популярных навыков
+- фильтрация списка вакансий
+- пагинация и метаданные списка вакансий
 - Ruff
 - Pytest
 - GitHub Actions workflow для backend
 
 Следующий этап:
 
-- подготовка API-контракта для React dashboard
-- пагинация списка вакансий
+- создание React-приложения
+- подключение dashboard к backend API
