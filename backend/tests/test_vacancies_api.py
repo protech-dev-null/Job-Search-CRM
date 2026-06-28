@@ -1,6 +1,45 @@
 from fastapi.testclient import TestClient
 
 
+def create_filter_test_vacancies(client: TestClient) -> None:
+    """Create a compact vacancy set used by list filter tests."""
+    vacancies = [
+        {
+            "company": "Orbit Labs",
+            "position": "React Developer",
+            "location": "Remote",
+            "source": "hh",
+            "status": "applied",
+            "priority": "high",
+            "work_format": "remote",
+            "skills": ["React", "TypeScript"],
+        },
+        {
+            "company": "CloudFox",
+            "position": "Python Backend Developer",
+            "location": "Moscow",
+            "source": "linkedin",
+            "status": "interview",
+            "priority": "medium",
+            "work_format": "hybrid",
+            "skills": ["Python", "FastAPI"],
+        },
+        {
+            "company": "Marketly",
+            "position": "UI Developer",
+            "location": "Saint Petersburg",
+            "source": "telegram",
+            "status": "applied",
+            "priority": "high",
+            "work_format": "remote",
+            "skills": ["React", "Tailwind CSS"],
+        },
+    ]
+    for vacancy in vacancies:
+        response = client.post("/api/vacancies", json=vacancy)
+        assert response.status_code == 201
+
+
 def test_create_vacancy(client: TestClient) -> None:
     response = client.post(
         "/api/vacancies",
@@ -109,3 +148,53 @@ def test_vacancy_not_found(client: TestClient) -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Vacancy not found"
+
+
+def test_filter_vacancies_by_status_and_priority(client: TestClient) -> None:
+    create_filter_test_vacancies(client)
+
+    response = client.get("/api/vacancies?status=applied&priority=high")
+
+    assert response.status_code == 200
+    assert {vacancy["company"] for vacancy in response.json()} == {
+        "Orbit Labs",
+        "Marketly",
+    }
+
+
+def test_filter_vacancies_by_work_format_and_source(client: TestClient) -> None:
+    create_filter_test_vacancies(client)
+
+    response = client.get("/api/vacancies?work_format=hybrid&source=linkedin")
+
+    assert response.status_code == 200
+    assert [vacancy["company"] for vacancy in response.json()] == ["CloudFox"]
+
+
+def test_search_vacancies_is_case_insensitive(client: TestClient) -> None:
+    create_filter_test_vacancies(client)
+
+    response = client.get("/api/vacancies?search=mosCOW")
+
+    assert response.status_code == 200
+    assert [vacancy["company"] for vacancy in response.json()] == ["CloudFox"]
+
+
+def test_filter_vacancies_by_skill_is_case_insensitive(client: TestClient) -> None:
+    create_filter_test_vacancies(client)
+
+    response = client.get("/api/vacancies?skill=react")
+
+    assert response.status_code == 200
+    assert {vacancy["company"] for vacancy in response.json()} == {
+        "Orbit Labs",
+        "Marketly",
+    }
+
+
+def test_rejects_invalid_vacancy_filters(client: TestClient) -> None:
+    invalid_status_response = client.get("/api/vacancies?status=unknown")
+    blank_skill_response = client.get("/api/vacancies?skill=%20%20")
+
+    assert invalid_status_response.status_code == 422
+    assert blank_skill_response.status_code == 422

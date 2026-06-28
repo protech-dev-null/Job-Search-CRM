@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class VacancySource(StrEnum):
@@ -40,6 +40,30 @@ class WorkFormat(StrEnum):
     REMOTE = "remote"
     OFFICE = "office"
     HYBRID = "hybrid"
+
+
+class VacancyFilters(BaseModel):
+    """Optional query parameters for filtering the vacancy list."""
+
+    search: str | None = Field(default=None, max_length=120)
+    status: VacancyStatus | None = None
+    priority: VacancyPriority | None = None
+    work_format: WorkFormat | None = None
+    source: VacancySource | None = None
+    skill: str | None = Field(default=None, max_length=80)
+
+    @field_validator("search", "skill")
+    @classmethod
+    def strip_non_empty_text(cls, value: str | None) -> str | None:
+        """Trim optional text filters and reject blank values."""
+        if value is None:
+            return None
+
+        stripped_value = value.strip()
+        if not stripped_value:
+            raise ValueError("value must not be blank")
+
+        return stripped_value
 
 
 class VacancyBase(BaseModel):

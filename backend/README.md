@@ -60,6 +60,25 @@ DELETE /api/vacancies/{vacancy_id}
 GET    /api/stats
 ```
 
+### Фильтры списка вакансий
+
+`GET /api/vacancies` поддерживает параметры:
+
+```text
+search
+status
+priority
+work_format
+source
+skill
+```
+
+Пример комбинированного фильтра:
+
+```text
+GET /api/vacancies?status=applied&priority=high&skill=react
+```
+
 ## Текущий этап
 
 Этап 3: Stats API.
@@ -82,5 +101,5 @@ GET    /api/stats
 
 Следующий этап:
 
-- фильтры для списка вакансий
 - подготовка API-контракта для React dashboard
+- пагинация списка вакансий
