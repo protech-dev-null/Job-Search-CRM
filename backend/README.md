@@ -46,11 +46,13 @@ POST   /api/vacancies
 GET    /api/vacancies/{vacancy_id}
 PATCH  /api/vacancies/{vacancy_id}
 DELETE /api/vacancies/{vacancy_id}
+
+GET    /api/stats
 ```
 
 ## Текущий этап
 
-Этап 2.2: Vacancy API.
+Этап 3: Stats API.
 
 Сделано:
 
@@ -62,11 +64,13 @@ DELETE /api/vacancies/{vacancy_id}
 - модель `Vacancy`
 - Pydantic-схемы для Vacancy API
 - CRUD endpoints для вакансий
+- статистика по статусам и приоритетам
+- рейтинг популярных навыков
 - Ruff
 - Pytest
 - GitHub Actions workflow для backend
 
 Следующий этап:
 
-- Stats API
 - фильтры для списка вакансий
+- подготовка API-контракта для React dashboard
