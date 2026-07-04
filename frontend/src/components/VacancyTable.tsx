@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Inbox, Pencil } from 'lucide-react'
+import { ChevronLeft, ChevronRight, History, Inbox, Pencil } from 'lucide-react'
 import { priorityLabels, statusLabels, statusStyles, workFormatLabels } from '../lib/vacancy'
 import type { Vacancy, VacancyPage } from '../types'
 
@@ -7,6 +7,7 @@ interface VacancyTableProps {
   isLoading: boolean
   onPageChange: (page: number) => void
   onEdit: (vacancy: Vacancy) => void
+  onViewActivities: (vacancy: Vacancy) => void
 }
 
 export function VacancyTable({
@@ -14,6 +15,7 @@ export function VacancyTable({
   isLoading,
   onPageChange,
   onEdit,
+  onViewActivities,
 }: VacancyTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
@@ -26,7 +28,7 @@ export function VacancyTable({
               <th className="px-4 py-3">Приоритет</th>
               <th className="px-4 py-3">Формат</th>
               <th className="px-4 py-3">Следующий шаг</th>
-              <th className="w-14 px-4 py-3">
+              <th className="w-24 px-4 py-3">
                 <span className="sr-only">Действия</span>
               </th>
             </tr>
@@ -40,7 +42,7 @@ export function VacancyTable({
                   <td className="px-4 py-4"><div className="h-5 w-16 rounded bg-zinc-100" /></td>
                   <td className="px-4 py-4"><div className="h-5 w-16 rounded bg-zinc-100" /></td>
                   <td className="px-4 py-4"><div className="h-5 w-36 rounded bg-zinc-100" /></td>
-                  <td className="px-4 py-4"><div className="size-8 rounded bg-zinc-100" /></td>
+                  <td className="px-4 py-4"><div className="h-8 w-20 rounded bg-zinc-100" /></td>
                 </tr>
               ))}
 
@@ -71,16 +73,27 @@ export function VacancyTable({
                   <td className="max-w-56 truncate px-4 py-3 text-zinc-600">
                     {vacancy.next_action ?? 'Не назначен'}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      className="icon-button"
-                      onClick={() => onEdit(vacancy)}
-                      aria-label={`Редактировать ${vacancy.position} в ${vacancy.company}`}
-                      title="Редактировать"
-                    >
-                      <Pencil size={16} aria-hidden="true" />
-                    </button>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-end gap-1">
+                      <button
+                        type="button"
+                        className="icon-button"
+                        onClick={() => onViewActivities(vacancy)}
+                        aria-label={`Открыть историю ${vacancy.position} в ${vacancy.company}`}
+                        title="История"
+                      >
+                        <History size={16} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-button"
+                        onClick={() => onEdit(vacancy)}
+                        aria-label={`Редактировать ${vacancy.position} в ${vacancy.company}`}
+                        title="Редактировать"
+                      >
+                        <Pencil size={16} aria-hidden="true" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

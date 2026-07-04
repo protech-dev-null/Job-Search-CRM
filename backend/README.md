@@ -157,4 +157,4 @@ GET /api/vacancies?page=2&page_size=10
 
 Следующий этап:
 
-- подключение Activity API к frontend
+- frontend-тесты и CI

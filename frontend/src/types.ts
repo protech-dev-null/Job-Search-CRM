@@ -13,6 +13,31 @@ export type VacancyPriority = 'low' | 'medium' | 'high'
 
 export type WorkFormat = 'remote' | 'office' | 'hybrid'
 
+export type ActivityKind =
+  | 'status_change'
+  | 'note'
+  | 'contact'
+  | 'interview'
+  | 'task'
+  | 'other'
+
+export interface Activity {
+  id: string
+  vacancy_id: string
+  kind: ActivityKind
+  description: string
+  occurred_at: string
+  created_at: string
+}
+
+export interface ActivityCreateInput {
+  kind: ActivityKind
+  description: string
+  occurred_at?: string
+}
+
+export type ActivityUpdateInput = Partial<ActivityCreateInput>
+
 export interface Vacancy {
   id: string
   company: string

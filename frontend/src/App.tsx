@@ -8,6 +8,7 @@ import {
   Search,
 } from 'lucide-react'
 import { getStats, getVacancies } from './api/dashboard'
+import { ActivityPanel } from './components/ActivityPanel'
 import { StatSummary } from './components/StatSummary'
 import { VacancyFormModal } from './components/VacancyFormModal'
 import { VacancyTable } from './components/VacancyTable'
@@ -35,6 +36,7 @@ function App() {
   const [formVacancy, setFormVacancy] = useState<
     Vacancy | null | undefined
   >(undefined)
+  const [activityVacancy, setActivityVacancy] = useState<Vacancy | null>(null)
   const deferredSearch = useDeferredValue(search.trim())
 
   useEffect(() => {
@@ -218,6 +220,7 @@ function App() {
                 isLoading={isVacanciesLoading}
                 onPageChange={setPage}
                 onEdit={setFormVacancy}
+                onViewActivities={setActivityVacancy}
               />
             </div>
 
@@ -255,6 +258,14 @@ function App() {
           vacancy={formVacancy}
           onClose={() => setFormVacancy(undefined)}
           onSaved={handleVacancySaved}
+        />
+      )}
+
+      {activityVacancy && (
+        <ActivityPanel
+          key={activityVacancy.id}
+          vacancy={activityVacancy}
+          onClose={() => setActivityVacancy(null)}
         />
       )}
     </div>
