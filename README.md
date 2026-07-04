@@ -37,8 +37,8 @@ bash start.sh
 - история вакансии `Activity`
 - нормализованные модели `Skill` и `vacancy_skills`
 - создание и редактирование вакансии во frontend
+- просмотр и управление историей Activity во frontend
 
 Следующий этап:
 
-- отображение Activity во frontend
 - frontend-тесты и CI
