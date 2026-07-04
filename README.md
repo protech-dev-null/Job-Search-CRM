@@ -57,6 +57,7 @@ bash start.sh
 - история вакансии `Activity`
 - нормализованные модели `Skill` и `vacancy_skills`
 - создание и редактирование вакансии во frontend
+- просмотр полной карточки и удаление вакансии во frontend
 - просмотр и управление историей Activity во frontend
 - компонентные тесты основных пользовательских сценариев
 - frontend CI: ESLint, Vitest и production build
