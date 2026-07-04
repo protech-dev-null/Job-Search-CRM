@@ -1,8 +1,63 @@
+from collections.abc import Iterable
+
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session
 
+from app.models.skill import Skill
 from app.models.vacancy import Vacancy
-from app.schemas.vacancy import VacancyFilters
+from app.schemas.vacancy import VacancyCreate, VacancyFilters, VacancyUpdate
+
+
+def get_or_create_skills(db: Session, names: Iterable[str]) -> list[Skill]:
+    """Resolve canonical skills, creating missing records when necessary."""
+    unique_names = {name.casefold(): name for name in names}
+    if not unique_names:
+        return []
+
+    skills_by_name = {
+        skill.normalized_name: skill
+        for skill in db.new
+        if isinstance(skill, Skill) and skill.normalized_name in unique_names
+    }
+    missing_names = unique_names.keys() - skills_by_name.keys()
+    if missing_names:
+        with db.no_autoflush:
+            existing_skills = db.scalars(
+                select(Skill).where(Skill.normalized_name.in_(missing_names))
+            ).all()
+        skills_by_name.update(
+            {skill.normalized_name: skill for skill in existing_skills}
+        )
+
+    for normalized_name, display_name in unique_names.items():
+        if normalized_name not in skills_by_name:
+            skill = Skill(name=display_name, normalized_name=normalized_name)
+            db.add(skill)
+            skills_by_name[normalized_name] = skill
+
+    return [skills_by_name[name] for name in unique_names]
+
+
+def build_vacancy(db: Session, payload: VacancyCreate) -> Vacancy:
+    """Build a vacancy model and resolve its normalized skill records."""
+    values = payload.model_dump(exclude={"skills"})
+    vacancy = Vacancy(**values)
+    vacancy.skills = get_or_create_skills(db, payload.skills)
+    return vacancy
+
+
+def apply_vacancy_update(
+    db: Session,
+    vacancy: Vacancy,
+    payload: VacancyUpdate,
+) -> None:
+    """Apply validated scalar and skill changes to a vacancy model."""
+    values = payload.model_dump(exclude_unset=True, exclude={"skills"})
+    for field, value in values.items():
+        setattr(vacancy, field, value)
+
+    if "skills" in payload.model_fields_set:
+        vacancy.skills = get_or_create_skills(db, payload.skills or [])
 
 
 def build_vacancy_statement(
@@ -28,24 +83,12 @@ def build_vacancy_statement(
                 Vacancy.location.ilike(search_pattern),
             )
         )
+    if filters.skill is not None:
+        statement = statement.join(Vacancy.skills).where(
+            Skill.normalized_name == filters.skill.casefold()
+        )
 
     return statement
-
-
-def vacancy_has_skill(vacancy: Vacancy, requested_skill: str) -> bool:
-    """Check whether a vacancy contains a skill ignoring letter case."""
-    normalized_skill = requested_skill.casefold()
-    return any(skill.casefold() == normalized_skill for skill in vacancy.skills)
-
-
-def paginate_items(
-    vacancies: list[Vacancy],
-    page: int,
-    page_size: int,
-) -> list[Vacancy]:
-    """Return one page from an in-memory vacancy list."""
-    start = (page - 1) * page_size
-    return vacancies[start : start + page_size]
 
 
 def find_vacancies(
@@ -55,17 +98,6 @@ def find_vacancies(
     """Return one page of matching vacancies and their total count."""
     statement = build_vacancy_statement(filters)
     ordered_statement = statement.order_by(Vacancy.created_at.desc())
-
-    if filters.skill is not None:
-        matching_vacancies = [
-            vacancy
-            for vacancy in db.scalars(ordered_statement).all()
-            if vacancy_has_skill(vacancy, filters.skill)
-        ]
-        return (
-            paginate_items(matching_vacancies, filters.page, filters.page_size),
-            len(matching_vacancies),
-        )
 
     total = db.scalar(select(func.count()).select_from(statement.subquery())) or 0
     offset = (filters.page - 1) * filters.page_size

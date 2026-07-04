@@ -21,6 +21,8 @@ env/
 .env
 .env.*
 !.env.example
+!.env.*.example
+!.env.*.example
 
 # Databases
 *.db
@@ -32,6 +34,9 @@ node_modules/
 dist/
 build/
 .vite/
+
+# Logs
+*.log
 
 # Editors
 .idea/

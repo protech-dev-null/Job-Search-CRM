@@ -1,4 +1,5 @@
 from app.db.base import Base
+from app.models.skill import Skill
 from app.models.vacancy import Vacancy
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
@@ -24,7 +25,10 @@ def test_vacancy_model_can_be_persisted() -> None:
         vacancy = Vacancy(
             company="Orbit Labs",
             position="React Developer",
-            skills=["React", "TypeScript"],
+            skills=[
+                Skill(name="React", normalized_name="react"),
+                Skill(name="TypeScript", normalized_name="typescript"),
+            ],
         )
 
         db.add(vacancy)
@@ -38,6 +42,6 @@ def test_vacancy_model_can_be_persisted() -> None:
     assert saved_vacancy.status == "interesting"
     assert saved_vacancy.priority == "medium"
     assert saved_vacancy.work_format == "remote"
-    assert saved_vacancy.skills == ["React", "TypeScript"]
+    assert [skill.name for skill in saved_vacancy.skills] == ["React", "TypeScript"]
     assert saved_vacancy.created_at is not None
     assert saved_vacancy.updated_at is not None

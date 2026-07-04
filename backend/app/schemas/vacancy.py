@@ -4,6 +4,26 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
+def normalize_skill_values(values: list[object] | None) -> list[str] | None:
+    """Convert skill models or strings into unique trimmed skill names."""
+    if values is None:
+        return None
+
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        name = value if isinstance(value, str) else getattr(value, "name", "")
+        normalized_name = name.strip()
+        key = normalized_name.casefold()
+        if not normalized_name:
+            raise ValueError("skill must not be blank")
+        if key not in seen:
+            result.append(normalized_name)
+            seen.add(key)
+
+    return result
+
+
 class VacancySource(StrEnum):
     """Supported places where a vacancy can be found."""
 
@@ -84,6 +104,12 @@ class VacancyBase(BaseModel):
     notes: str | None = None
     next_action: str | None = Field(default=None, max_length=240)
 
+    @field_validator("skills", mode="before")
+    @classmethod
+    def normalize_skills(cls, value: list[object]) -> list[str]:
+        """Normalize input names and serialize persisted Skill models."""
+        return normalize_skill_values(value) or []
+
 
 class VacancyCreate(VacancyBase):
     """Payload for creating a vacancy."""
@@ -106,6 +132,12 @@ class VacancyUpdate(BaseModel):
     skills: list[str] | None = None
     notes: str | None = None
     next_action: str | None = Field(default=None, max_length=240)
+
+    @field_validator("skills", mode="before")
+    @classmethod
+    def normalize_skills(cls, value: list[object] | None) -> list[str] | None:
+        """Normalize optional skills supplied for a partial update."""
+        return normalize_skill_values(value)
 
 
 class VacancyRead(VacancyBase):

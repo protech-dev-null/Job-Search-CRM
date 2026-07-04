@@ -38,11 +38,15 @@ C:\WorkSpace\petProjects\job-search-crm-mockup
 ```powershell
 cd C:\WorkSpace\petProjects\job-search-crm-mockup\backend
 uv sync
+uv run alembic upgrade head
 uv run python -m app.db.seed
 ```
 
 Команда `seed` добавляет демонстрационные вакансии. Её можно запускать повторно:
 существующие записи не дублируются.
+
+По умолчанию используется SQLite. Запуск с PostgreSQL описан в
+[`database.md`](database.md).
 
 ### 2. Запустить backend
 

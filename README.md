@@ -3,11 +3,12 @@
 ## Документация
 
 - [Локальный запуск backend и frontend](docs/local-development.md)
+- [База данных, Alembic и PostgreSQL](docs/database.md)
 - [Заполнение базы тестовыми данными](docs/seed-data.md)
 
 ## Структура
 
-- `backend` — FastAPI, SQLAlchemy и SQLite
+- `backend` — FastAPI, SQLAlchemy, SQLite/PostgreSQL и Alembic
 - `frontend` — React, TypeScript, Vite и Tailwind CSS
 - `maket` — исходный статический макет интерфейса
 
@@ -21,7 +22,7 @@ bash start.sh
 
 ## Текущий этап
 
-Этап 5: основа frontend.
+Этап 6: развитие модели данных backend.
 
 Сделано:
 
@@ -31,8 +32,13 @@ bash start.sh
 - dashboard со статистикой и популярными навыками
 - список вакансий с поиском, фильтром по статусу и пагинацией
 - состояния загрузки и ошибки API
+- миграции Alembic
+- окружение PostgreSQL через Docker Compose
+- история вакансии `Activity`
+- нормализованные модели `Skill` и `vacancy_skills`
 
 Следующий этап:
 
 - форма создания вакансии
+- отображение Activity во frontend
 - frontend-тесты и CI

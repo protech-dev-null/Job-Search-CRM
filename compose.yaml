@@ -1,0 +1,21 @@
+name: job-search-crm
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: job_search_crm
+      POSTGRES_USER: job_search_crm
+      POSTGRES_PASSWORD: job_search_crm
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U job_search_crm -d job_search_crm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
