@@ -13,7 +13,11 @@ from app.schemas.vacancy import (
     VacancyRead,
     VacancyUpdate,
 )
-from app.services.vacancy_service import find_vacancies
+from app.services.vacancy_service import (
+    apply_vacancy_update,
+    build_vacancy,
+    find_vacancies,
+)
 
 router = APIRouter(prefix=f"{settings.api_prefix}/vacancies", tags=["vacancies"])
 
@@ -54,7 +58,7 @@ def list_vacancies(db: DbSession, filters: VacancyFilterParams) -> VacancyPage:
 )
 def create_vacancy(payload: VacancyCreate, db: DbSession) -> Vacancy:
     """Create a new vacancy from validated API input."""
-    vacancy = Vacancy(**payload.model_dump())
+    vacancy = build_vacancy(db, payload)
 
     db.add(vacancy)
     db.commit()
@@ -78,8 +82,7 @@ def update_vacancy(
     """Partially update a vacancy by identifier."""
     vacancy = get_vacancy_or_404(vacancy_id, db)
 
-    for field, value in payload.model_dump(exclude_unset=True).items():
-        setattr(vacancy, field, value)
+    apply_vacancy_update(db, vacancy, payload)
 
     db.add(vacancy)
     db.commit()

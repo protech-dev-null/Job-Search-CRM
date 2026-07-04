@@ -1,10 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.init_db import init_db
+from app.db.migrations import upgrade_database
 from app.db.session import SessionLocal
 from app.models.vacancy import Vacancy
 from app.schemas.vacancy import VacancyCreate
+from app.services.vacancy_service import build_vacancy
 
 SAMPLE_VACANCIES = (
     VacancyCreate(
@@ -144,7 +145,7 @@ def seed_vacancies(db: Session) -> int:
         db.execute(select(Vacancy.company, Vacancy.position)).all()
     )
     vacancies_to_add = [
-        Vacancy(**payload.model_dump())
+        build_vacancy(db, payload)
         for payload in SAMPLE_VACANCIES
         if (payload.company, payload.position) not in existing_vacancies
     ]
@@ -156,8 +157,8 @@ def seed_vacancies(db: Session) -> int:
 
 
 def main() -> None:
-    """Create tables and populate the configured database with sample data."""
-    init_db()
+    """Upgrade the database and populate it with sample vacancies."""
+    upgrade_database()
     with SessionLocal() as db:
         added_count = seed_vacancies(db)
 

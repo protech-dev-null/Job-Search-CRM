@@ -20,6 +20,21 @@ jobs:
     name: Ruff and tests
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: job_search_crm
+          POSTGRES_USER: job_search_crm
+          POSTGRES_PASSWORD: job_search_crm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U job_search_crm -d job_search_crm"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     defaults:
       run:
         working-directory: backend
@@ -47,3 +62,8 @@ jobs:
 
       - name: Tests
         run: uv run python -B -m pytest
+
+      - name: PostgreSQL migration smoke test
+        env:
+          DATABASE_URL: postgresql+psycopg://job_search_crm:job_search_crm@localhost:5432/job_search_crm
+        run: uv run alembic upgrade head

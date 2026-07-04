@@ -1,8 +1,6 @@
-from app.db.base import Base
-from app.db.session import engine
-from app.models import vacancy  # noqa: F401
+from app.db.migrations import upgrade_database
 
 
 def init_db() -> None:
-    """Create registered database tables for the MVP SQLite setup."""
-    Base.metadata.create_all(bind=engine)
+    """Upgrade the configured database schema to the latest revision."""
+    upgrade_database()
