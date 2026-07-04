@@ -1,4 +1,11 @@
-import { ChevronLeft, ChevronRight, History, Inbox, Pencil } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  History,
+  Inbox,
+  Pencil,
+} from 'lucide-react'
 import { priorityLabels, statusLabels, statusStyles, workFormatLabels } from '../lib/vacancy'
 import type { Vacancy, VacancyPage } from '../types'
 
@@ -6,6 +13,7 @@ interface VacancyTableProps {
   data: VacancyPage
   isLoading: boolean
   onPageChange: (page: number) => void
+  onView: (vacancy: Vacancy) => void
   onEdit: (vacancy: Vacancy) => void
   onViewActivities: (vacancy: Vacancy) => void
 }
@@ -14,6 +22,7 @@ export function VacancyTable({
   data,
   isLoading,
   onPageChange,
+  onView,
   onEdit,
   onViewActivities,
 }: VacancyTableProps) {
@@ -28,7 +37,7 @@ export function VacancyTable({
               <th className="px-4 py-3">Приоритет</th>
               <th className="px-4 py-3">Формат</th>
               <th className="px-4 py-3">Следующий шаг</th>
-              <th className="w-24 px-4 py-3">
+              <th className="w-32 px-4 py-3">
                 <span className="sr-only">Действия</span>
               </th>
             </tr>
@@ -60,7 +69,14 @@ export function VacancyTable({
               data.items.map((vacancy) => (
                 <tr key={vacancy.id} className="transition-colors hover:bg-zinc-50">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-zinc-900">{vacancy.position}</p>
+                    <button
+                      type="button"
+                      className="font-medium text-zinc-900 hover:text-teal-700 hover:underline"
+                      onClick={() => onView(vacancy)}
+                      aria-label={`Открыть карточку ${vacancy.position} в ${vacancy.company}`}
+                    >
+                      {vacancy.position}
+                    </button>
                     <p className="mt-0.5 text-zinc-500">{vacancy.company}</p>
                   </td>
                   <td className="px-4 py-3">
@@ -75,6 +91,15 @@ export function VacancyTable({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-1">
+                      <button
+                        type="button"
+                        className="icon-button"
+                        onClick={() => onView(vacancy)}
+                        aria-label={`Показать карточку ${vacancy.position} в ${vacancy.company}`}
+                        title="Карточка"
+                      >
+                        <Eye size={16} aria-hidden="true" />
+                      </button>
                       <button
                         type="button"
                         className="icon-button"

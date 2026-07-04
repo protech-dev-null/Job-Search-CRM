@@ -54,3 +54,10 @@ export function updateVacancy(
     body: JSON.stringify(payload),
   })
 }
+
+export function deleteVacancy(vacancyId: string): Promise<void> {
+  return apiRequest<void>(
+    `/api/vacancies/${encodeURIComponent(vacancyId)}`,
+    { method: 'DELETE' },
+  )
+}
