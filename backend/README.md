@@ -1,8 +1,8 @@
 # Job Search CRM Backend
 
-Backend API для Job Search CRM.
+Backend API for Job Search CRM.
 
-## Стек
+## Technology stack
 
 - Python
 - FastAPI
@@ -15,7 +15,7 @@ Backend API для Job Search CRM.
 - Ruff
 - Pytest
 
-## Запуск
+## Run
 
 ```powershell
 uv sync
@@ -23,15 +23,15 @@ uv run alembic upgrade head
 uv run fastapi dev app/main.py
 ```
 
-Альтернативный запуск для PyCharm:
+Alternative command for PyCharm:
 
 ```powershell
 uv run python run.py
 ```
 
-`run.py` автоматически применяет миграции перед запуском сервера.
+`run.py` automatically applies migrations before starting the server.
 
-## Миграции
+## Migrations
 
 ```powershell
 uv run alembic current
@@ -39,27 +39,27 @@ uv run alembic upgrade head
 uv run alembic check
 ```
 
-Создать миграцию после изменения моделей:
+Create a migration after changing the models:
 
 ```powershell
 uv run alembic revision --autogenerate -m "describe change"
 ```
 
-Подробности по SQLite и PostgreSQL находятся в `docs/database.md`.
+See `docs/database.md` for SQLite and PostgreSQL details.
 
-## Тестовые данные
+## Demo data
 
-Заполнить локальную SQLite-базу демонстрационными вакансиями:
+Populate the local SQLite database with demo vacancies:
 
 ```powershell
 uv run python -m app.db.seed
 ```
 
-Повторный запуск не создаёт дубликаты вакансий.
+Running the command again does not create duplicate vacancies.
 
-## Проверки
+## Checks
 
-Эти же команды запускаются в CI:
+The same commands run in CI:
 
 ```powershell
 uv run ruff check .
@@ -87,9 +87,9 @@ GET    /api/skills
 GET    /api/stats
 ```
 
-### Фильтры списка вакансий
+### Vacancy list filters
 
-`GET /api/vacancies` поддерживает параметры:
+`GET /api/vacancies` supports these parameters:
 
 ```text
 search
@@ -102,22 +102,22 @@ page
 page_size
 ```
 
-`page` начинается с `1`. Значение `page_size` по умолчанию равно `20`,
-максимальное значение — `100`.
+`page` starts at `1`. The default `page_size` is `20`, and the maximum is
+`100`.
 
-Пример комбинированного фильтра:
+Combined filter example:
 
 ```text
 GET /api/vacancies?status=applied&priority=high&skill=react
 ```
 
-Пример запроса второй страницы:
+Second-page request example:
 
 ```text
 GET /api/vacancies?page=2&page_size=10
 ```
 
-Ответ списка вакансий:
+Vacancy list response:
 
 ```json
 {
@@ -129,32 +129,32 @@ GET /api/vacancies?page=2&page_size=10
 }
 ```
 
-## Текущий этап
+## Current status
 
-Этап 6: развитие модели данных.
+The backend MVP scope is complete.
 
-Сделано:
+Completed:
 
-- FastAPI app
-- настройки приложения
-- CORS для frontend
+- FastAPI application
+- application settings
+- CORS configuration for the frontend
 - `/health` endpoint
-- SQLAlchemy/SQLite foundation
-- модель `Vacancy`
-- Pydantic-схемы для Vacancy API
-- CRUD endpoints для вакансий
-- статистика по статусам и приоритетам
-- рейтинг популярных навыков
-- фильтрация списка вакансий
-- пагинация и метаданные списка вакансий
-- миграции Alembic
-- поддержка PostgreSQL через Psycopg 3
-- модель и API `Activity`
-- нормализованная модель `Skill`
+- SQLAlchemy and SQLite foundation
+- `Vacancy` model
+- Pydantic schemas for the Vacancy API
+- CRUD endpoints for vacancies
+- statistics by status and priority
+- popular skill ranking
+- vacancy filtering
+- pagination and vacancy list metadata
+- Alembic migrations
+- PostgreSQL support through Psycopg 3
+- `Activity` model and API
+- normalized `Skill` model
 - Ruff
 - Pytest
-- GitHub Actions workflow для backend
+- backend GitHub Actions workflow
 
-Следующий этап:
+Next project milestone:
 
-- frontend-тесты и CI
+- portfolio packaging and the final MVP roadmap

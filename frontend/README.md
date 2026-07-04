@@ -1,53 +1,53 @@
 # Job Search CRM Frontend
 
-React-интерфейс для просмотра статистики и списка вакансий.
+React interface for viewing job search statistics and managing vacancies.
 
-Полная инструкция совместного запуска находится в
+The complete local setup guide is available in
 [`docs/local-development.md`](../docs/local-development.md).
 
-## Возможности
+## Features
 
-- dashboard со статистикой поиска работы
-- поиск, фильтрация и пагинация вакансий
-- создание, просмотр, редактирование и удаление вакансий
-- просмотр, создание, редактирование и удаление Activity
-- отображение популярных навыков
+- dashboard with job search statistics
+- vacancy search, filtering, and pagination
+- vacancy creation, details, editing, and deletion
+- viewing, creating, editing, and deleting activities
+- popular skill statistics
 
-## Стек
+## Technology stack
 
 - React 19
 - TypeScript
 - Vite 6
 - Tailwind CSS 4
 - Yarn Classic
-- Vitest и React Testing Library
+- Vitest and React Testing Library
 
-Vite 6 выбран из-за совместимости с установленным Node.js 22.11.
+Vite 6 is used for compatibility with the installed Node.js 22.11 runtime.
 
-## Установка
+## Install
 
 ```powershell
 yarn install
 ```
 
-## Запуск
+## Run
 
-Сначала запустите backend на `http://127.0.0.1:8000`, затем frontend:
+Start the backend at `http://127.0.0.1:8000`, then start the frontend:
 
 ```powershell
 yarn dev
 ```
 
-Vite перенаправляет запросы `/api` на локальный backend.
-Frontend открывается по адресу `http://127.0.0.1:5173`.
+Vite proxies `/api` requests to the local backend. The frontend is available at
+`http://127.0.0.1:5173`.
 
-Для отдельного адреса API создайте `.env`:
+To use a different API address, create a `.env` file:
 
 ```dotenv
 VITE_API_URL=http://127.0.0.1:8000
 ```
 
-## Проверки
+## Checks
 
 ```powershell
 yarn lint
@@ -55,11 +55,11 @@ yarn test
 yarn build
 ```
 
-Для запуска тестов в режиме наблюдения:
+Run tests in watch mode:
 
 ```powershell
 yarn test:watch
 ```
 
-GitHub Actions запускает `lint`, `test` и `build` при изменениях frontend в
-ветках `main` и `feature/**`, а также в Pull Request в `main`.
+GitHub Actions runs `lint`, `test`, and `build` for frontend changes pushed to
+`main` and `feature/**` branches, and for pull requests targeting `main`.
