@@ -1,5 +1,25 @@
 # Job Search CRM mockup
 
+Job Search CRM — fullstack-приложение для ведения вакансий, истории контактов и
+аналитики процесса поиска работы.
+
+## Архитектура
+
+```text
+React + TypeScript
+        |
+        | HTTP /api
+        v
+FastAPI routes -> services -> SQLAlchemy -> SQLite / PostgreSQL
+        |
+        +-> статистика по статусам, приоритетам и навыкам
+```
+
+- frontend отвечает за dashboard, фильтрацию, формы вакансий и Activity;
+- backend хранит данные, валидирует API-контракт и рассчитывает статистику;
+- Alembic управляет схемой SQLite и PostgreSQL;
+- GitHub Actions отдельно проверяет backend и frontend.
+
 ## Документация
 
 - [Локальный запуск backend и frontend](docs/local-development.md)
@@ -22,7 +42,7 @@ bash start.sh
 
 ## Текущий этап
 
-Этап 8: качество и автоматизация frontend.
+Этап 9: стабилизация MVP и подготовка портфолио.
 
 Сделано:
 
@@ -40,8 +60,9 @@ bash start.sh
 - просмотр и управление историей Activity во frontend
 - компонентные тесты основных пользовательских сценариев
 - frontend CI: ESLint, Vitest и production build
+- PostgreSQL 18 smoke-test: миграции, seed и ключевые API endpoints
 
 Следующий этап:
 
-- локальный smoke-тест PostgreSQL через Docker Compose
-- улучшение README и подготовка скриншотов для портфолио
+- подготовка скриншотов работающего приложения
+- оформление итогового портфолио-описания и roadmap

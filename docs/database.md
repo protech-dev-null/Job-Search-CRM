@@ -24,6 +24,11 @@ uv run alembic check
 
 ## PostgreSQL
 
+Docker Compose использует PostgreSQL 18 и отдельный volume
+`postgres_18_data`. Для PostgreSQL 18 volume подключается к
+`/var/lib/postgresql`: путь `/var/lib/postgresql/data`, применявшийся в старых
+версиях образа, не поддерживает новую структуру каталогов.
+
 Запустить PostgreSQL из корня репозитория:
 
 ```powershell
@@ -50,6 +55,14 @@ uv run python -m app.db.seed
 ```powershell
 uv run python run.py
 ```
+
+Проверить состояние контейнера:
+
+```powershell
+docker compose ps
+```
+
+В колонке `STATUS` контейнер должен быть отмечен как `healthy`.
 
 Строка подключения для локального контейнера:
 
