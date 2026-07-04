@@ -22,7 +22,7 @@ bash start.sh
 
 ## Текущий этап
 
-Этап 7: пользовательские сценарии frontend.
+Этап 8: качество и автоматизация frontend.
 
 Сделано:
 
@@ -38,7 +38,10 @@ bash start.sh
 - нормализованные модели `Skill` и `vacancy_skills`
 - создание и редактирование вакансии во frontend
 - просмотр и управление историей Activity во frontend
+- компонентные тесты основных пользовательских сценариев
+- frontend CI: ESLint, Vitest и production build
 
 Следующий этап:
 
-- frontend-тесты и CI
+- локальный smoke-тест PostgreSQL через Docker Compose
+- улучшение README и подготовка скриншотов для портфолио
