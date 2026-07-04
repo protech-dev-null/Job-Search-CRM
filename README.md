@@ -22,7 +22,7 @@ bash start.sh
 
 ## Текущий этап
 
-Этап 6: развитие модели данных backend.
+Этап 7: пользовательские сценарии frontend.
 
 Сделано:
 
@@ -36,9 +36,9 @@ bash start.sh
 - окружение PostgreSQL через Docker Compose
 - история вакансии `Activity`
 - нормализованные модели `Skill` и `vacancy_skills`
+- создание и редактирование вакансии во frontend
 
 Следующий этап:
 
-- форма создания вакансии
 - отображение Activity во frontend
 - frontend-тесты и CI
