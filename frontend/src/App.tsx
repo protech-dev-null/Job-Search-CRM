@@ -10,6 +10,7 @@ import {
 import { getStats, getVacancies } from './api/dashboard'
 import { ActivityPanel } from './components/ActivityPanel'
 import { StatSummary } from './components/StatSummary'
+import { VacancyDetailPanel } from './components/VacancyDetailPanel'
 import { VacancyFormModal } from './components/VacancyFormModal'
 import { VacancyTable } from './components/VacancyTable'
 import { statusLabels } from './lib/vacancy'
@@ -36,6 +37,7 @@ function App() {
   const [formVacancy, setFormVacancy] = useState<
     Vacancy | null | undefined
   >(undefined)
+  const [detailVacancy, setDetailVacancy] = useState<Vacancy | null>(null)
   const [activityVacancy, setActivityVacancy] = useState<Vacancy | null>(null)
   const deferredSearch = useDeferredValue(search.trim())
 
@@ -98,11 +100,30 @@ function App() {
     setPage(1)
   }
 
-  const handleVacancySaved = () => {
+  const handleVacancySaved = (savedVacancy: Vacancy) => {
     if (formVacancy === null) {
       setPage(1)
     }
+    setDetailVacancy((current) =>
+      current?.id === savedVacancy.id ? savedVacancy : current,
+    )
     setFormVacancy(undefined)
+    setRefreshVersion((value) => value + 1)
+  }
+
+  const handleEditVacancy = (vacancy: Vacancy) => {
+    setDetailVacancy(null)
+    setFormVacancy(vacancy)
+  }
+
+  const handleVacancyDeleted = (vacancy: Vacancy) => {
+    setDetailVacancy(null)
+    setActivityVacancy((current) =>
+      current?.id === vacancy.id ? null : current,
+    )
+    if (page > 1 && vacancies.items.length === 1) {
+      setPage((current) => current - 1)
+    }
     setRefreshVersion((value) => value + 1)
   }
 
@@ -219,7 +240,8 @@ function App() {
                 data={vacancies}
                 isLoading={isVacanciesLoading}
                 onPageChange={setPage}
-                onEdit={setFormVacancy}
+                onView={setDetailVacancy}
+                onEdit={handleEditVacancy}
                 onViewActivities={setActivityVacancy}
               />
             </div>
@@ -258,6 +280,17 @@ function App() {
           vacancy={formVacancy}
           onClose={() => setFormVacancy(undefined)}
           onSaved={handleVacancySaved}
+        />
+      )}
+
+      {detailVacancy && (
+        <VacancyDetailPanel
+          key={detailVacancy.id}
+          vacancy={detailVacancy}
+          onClose={() => setDetailVacancy(null)}
+          onEdit={handleEditVacancy}
+          onViewActivities={setActivityVacancy}
+          onDeleted={handleVacancyDeleted}
         />
       )}
 
