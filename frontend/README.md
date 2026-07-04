@@ -20,6 +20,7 @@ React-интерфейс для просмотра статистики и сп�
 - Vite 6
 - Tailwind CSS 4
 - Yarn Classic
+- Vitest и React Testing Library
 
 Vite 6 выбран из-за совместимости с установленным Node.js 22.11.
 
@@ -50,51 +51,15 @@ VITE_API_URL=http://127.0.0.1:8000
 
 ```powershell
 yarn lint
+yarn test
 yarn build
 ```
 
-## Дополнительная настройка ESLint
+Для запуска тестов в режиме наблюдения:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```powershell
+yarn test:watch
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+GitHub Actions запускает `lint`, `test` и `build` при изменениях frontend в
+ветках `main` и `feature/**`, а также в Pull Request в `main`.

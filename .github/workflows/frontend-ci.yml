@@ -1,0 +1,48 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+
+jobs:
+  frontend:
+    name: Lint, tests and build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.11.0"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: ESLint
+        run: yarn lint
+
+      - name: Tests
+        run: yarn test
+
+      - name: TypeScript and production build
+        run: yarn build
