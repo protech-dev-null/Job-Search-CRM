@@ -1,4 +1,17 @@
-import type { VacancyPriority, VacancyStatus, WorkFormat } from '../types'
+import type {
+  VacancyPriority,
+  VacancySource,
+  VacancyStatus,
+  WorkFormat,
+} from '../types'
+
+export const sourceLabels: Record<VacancySource, string> = {
+  hh: 'HeadHunter',
+  linkedin: 'LinkedIn',
+  telegram: 'Telegram',
+  manual: 'Вручную',
+  other: 'Другое',
+}
 
 export const statusLabels: Record<VacancyStatus, string> = {
   interesting: 'Интересно',

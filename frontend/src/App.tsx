@@ -3,14 +3,16 @@ import {
   BarChart3,
   BriefcaseBusiness,
   LayoutDashboard,
+  Plus,
   RefreshCw,
   Search,
 } from 'lucide-react'
 import { getStats, getVacancies } from './api/dashboard'
 import { StatSummary } from './components/StatSummary'
+import { VacancyFormModal } from './components/VacancyFormModal'
 import { VacancyTable } from './components/VacancyTable'
 import { statusLabels } from './lib/vacancy'
-import type { Stats, VacancyPage, VacancyStatus } from './types'
+import type { Stats, Vacancy, VacancyPage, VacancyStatus } from './types'
 
 const emptyVacancyPage: VacancyPage = {
   items: [],
@@ -30,6 +32,9 @@ function App() {
   const [isStatsLoading, setIsStatsLoading] = useState(true)
   const [isVacanciesLoading, setIsVacanciesLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [formVacancy, setFormVacancy] = useState<
+    Vacancy | null | undefined
+  >(undefined)
   const deferredSearch = useDeferredValue(search.trim())
 
   useEffect(() => {
@@ -91,6 +96,14 @@ function App() {
     setPage(1)
   }
 
+  const handleVacancySaved = () => {
+    if (formVacancy === null) {
+      setPage(1)
+    }
+    setFormVacancy(undefined)
+    setRefreshVersion((value) => value + 1)
+  }
+
   return (
     <div className="min-h-screen bg-zinc-100 text-zinc-900">
       <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-zinc-200 bg-white lg:block">
@@ -124,15 +137,26 @@ function App() {
               Текущая воронка и активные вакансии
             </p>
           </div>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={() => setRefreshVersion((value) => value + 1)}
-            aria-label="Обновить данные"
-            title="Обновить данные"
-          >
-            <RefreshCw size={17} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => setRefreshVersion((value) => value + 1)}
+              aria-label="Обновить данные"
+              title="Обновить данные"
+            >
+              <RefreshCw size={17} />
+            </button>
+            <button
+              type="button"
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-teal-700 px-3 text-sm font-medium text-white hover:bg-teal-800"
+              onClick={() => setFormVacancy(null)}
+            >
+              <Plus size={17} aria-hidden="true" />
+              <span className="hidden sm:inline">Новая вакансия</span>
+              <span className="sm:hidden">Добавить</span>
+            </button>
+          </div>
         </header>
 
         <div className="mx-auto max-w-7xl space-y-5 p-4 sm:p-6">
@@ -193,6 +217,7 @@ function App() {
                 data={vacancies}
                 isLoading={isVacanciesLoading}
                 onPageChange={setPage}
+                onEdit={setFormVacancy}
               />
             </div>
 
@@ -223,6 +248,15 @@ function App() {
           </section>
         </div>
       </main>
+
+      {formVacancy !== undefined && (
+        <VacancyFormModal
+          key={formVacancy?.id ?? 'new'}
+          vacancy={formVacancy}
+          onClose={() => setFormVacancy(undefined)}
+          onSaved={handleVacancySaved}
+        />
+      )}
     </div>
   )
 }

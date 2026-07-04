@@ -1,18 +1,24 @@
-import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Inbox, Pencil } from 'lucide-react'
 import { priorityLabels, statusLabels, statusStyles, workFormatLabels } from '../lib/vacancy'
-import type { VacancyPage } from '../types'
+import type { Vacancy, VacancyPage } from '../types'
 
 interface VacancyTableProps {
   data: VacancyPage
   isLoading: boolean
   onPageChange: (page: number) => void
+  onEdit: (vacancy: Vacancy) => void
 }
 
-export function VacancyTable({ data, isLoading, onPageChange }: VacancyTableProps) {
+export function VacancyTable({
+  data,
+  isLoading,
+  onPageChange,
+  onEdit,
+}: VacancyTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[840px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[900px] border-collapse text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-medium text-zinc-500">
             <tr>
               <th className="px-4 py-3">Компания и позиция</th>
@@ -20,6 +26,9 @@ export function VacancyTable({ data, isLoading, onPageChange }: VacancyTableProp
               <th className="px-4 py-3">Приоритет</th>
               <th className="px-4 py-3">Формат</th>
               <th className="px-4 py-3">Следующий шаг</th>
+              <th className="w-14 px-4 py-3">
+                <span className="sr-only">Действия</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -31,12 +40,13 @@ export function VacancyTable({ data, isLoading, onPageChange }: VacancyTableProp
                   <td className="px-4 py-4"><div className="h-5 w-16 rounded bg-zinc-100" /></td>
                   <td className="px-4 py-4"><div className="h-5 w-16 rounded bg-zinc-100" /></td>
                   <td className="px-4 py-4"><div className="h-5 w-36 rounded bg-zinc-100" /></td>
+                  <td className="px-4 py-4"><div className="size-8 rounded bg-zinc-100" /></td>
                 </tr>
               ))}
 
             {!isLoading && data.items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-14 text-center">
+                <td colSpan={6} className="px-4 py-14 text-center">
                   <Inbox className="mx-auto text-zinc-300" size={28} aria-hidden="true" />
                   <p className="mt-3 font-medium text-zinc-700">Вакансии не найдены</p>
                   <p className="mt-1 text-zinc-500">Измените параметры поиска</p>
@@ -60,6 +70,17 @@ export function VacancyTable({ data, isLoading, onPageChange }: VacancyTableProp
                   <td className="px-4 py-3 text-zinc-700">{workFormatLabels[vacancy.work_format]}</td>
                   <td className="max-w-56 truncate px-4 py-3 text-zinc-600">
                     {vacancy.next_action ?? 'Не назначен'}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      className="icon-button"
+                      onClick={() => onEdit(vacancy)}
+                      aria-label={`Редактировать ${vacancy.position} в ${vacancy.company}`}
+                      title="Редактировать"
+                    >
+                      <Pencil size={16} aria-hidden="true" />
+                    </button>
                   </td>
                 </tr>
               ))}

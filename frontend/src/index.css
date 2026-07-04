@@ -43,6 +43,16 @@ select {
   box-shadow: 0 0 0 3px rgb(13 148 136 / 0.12);
 }
 
+.form-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #3f3f46;
+}
+
 .icon-button {
   display: inline-grid;
   width: 2.25rem;

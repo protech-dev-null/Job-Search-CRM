@@ -1,5 +1,12 @@
 import { apiRequest } from './client'
-import type { Stats, VacancyPage, VacancyStatus } from '../types'
+import type {
+  Stats,
+  Vacancy,
+  VacancyCreateInput,
+  VacancyPage,
+  VacancyStatus,
+  VacancyUpdateInput,
+} from '../types'
 
 interface VacancyListParams {
   page: number
@@ -9,7 +16,7 @@ interface VacancyListParams {
 }
 
 export function getStats(signal?: AbortSignal): Promise<Stats> {
-  return apiRequest<Stats>('/api/stats', signal)
+  return apiRequest<Stats>('/api/stats', { signal })
 }
 
 export function getVacancies(
@@ -28,5 +35,22 @@ export function getVacancies(
     query.set('status', params.status)
   }
 
-  return apiRequest<VacancyPage>(`/api/vacancies?${query}`, signal)
+  return apiRequest<VacancyPage>(`/api/vacancies?${query}`, { signal })
+}
+
+export function createVacancy(payload: VacancyCreateInput): Promise<Vacancy> {
+  return apiRequest<Vacancy>('/api/vacancies', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateVacancy(
+  vacancyId: string,
+  payload: VacancyUpdateInput,
+): Promise<Vacancy> {
+  return apiRequest<Vacancy>(`/api/vacancies/${encodeURIComponent(vacancyId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
 }

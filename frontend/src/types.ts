@@ -31,6 +31,23 @@ export interface Vacancy {
   updated_at: string
 }
 
+export interface VacancyCreateInput {
+  company: string
+  position: string
+  url: string | null
+  source: VacancySource
+  status: VacancyStatus
+  priority: VacancyPriority
+  salary: string | null
+  location: string | null
+  work_format: WorkFormat
+  skills: string[]
+  notes: string | null
+  next_action: string | null
+}
+
+export type VacancyUpdateInput = Partial<VacancyCreateInput>
+
 export interface VacancyPage {
   items: Vacancy[]
   total: number
