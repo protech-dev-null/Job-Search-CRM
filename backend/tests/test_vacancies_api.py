@@ -131,6 +131,57 @@ def test_update_vacancy(client: TestClient) -> None:
     assert response.json()["notes"] == "Prepare questions for HR call."
 
 
+def test_status_change_creates_activity(client: TestClient) -> None:
+    """Record a timeline entry when a vacancy moves to another status."""
+    create_response = client.post(
+        "/api/vacancies",
+        json={
+            "company": "Northwind",
+            "position": "Frontend Developer",
+        },
+    )
+    vacancy_id = create_response.json()["id"]
+
+    update_response = client.patch(
+        f"/api/vacancies/{vacancy_id}",
+        json={"status": "applied"},
+    )
+    activities_response = client.get(f"/api/vacancies/{vacancy_id}/activities")
+
+    assert update_response.status_code == 200
+    assert activities_response.status_code == 200
+    activities = activities_response.json()
+    assert len(activities) == 1
+    assert activities[0]["vacancy_id"] == vacancy_id
+    assert activities[0]["kind"] == "status_change"
+    assert activities[0]["description"] == "Status was changed: interesting -> applied"
+    assert activities[0]["occurred_at"]
+
+
+def test_update_without_status_change_does_not_create_activity(
+    client: TestClient,
+) -> None:
+    """Avoid timeline entries when only non-status vacancy fields change."""
+    create_response = client.post(
+        "/api/vacancies",
+        json={
+            "company": "Northwind",
+            "position": "Frontend Developer",
+        },
+    )
+    vacancy_id = create_response.json()["id"]
+
+    update_response = client.patch(
+        f"/api/vacancies/{vacancy_id}",
+        json={"notes": "Resume sent to the recruiter."},
+    )
+    activities_response = client.get(f"/api/vacancies/{vacancy_id}/activities")
+
+    assert update_response.status_code == 200
+    assert activities_response.status_code == 200
+    assert activities_response.json() == []
+
+
 def test_delete_vacancy(client: TestClient) -> None:
     create_response = client.post(
         "/api/vacancies",

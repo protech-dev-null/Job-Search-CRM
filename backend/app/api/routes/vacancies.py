@@ -16,6 +16,7 @@ from app.schemas.vacancy import (
 from app.services.vacancy_service import (
     apply_vacancy_update,
     build_vacancy,
+    create_status_change_activity,
     find_vacancies,
 )
 
@@ -82,7 +83,11 @@ def update_vacancy(
     """Partially update a vacancy by identifier."""
     vacancy = get_vacancy_or_404(vacancy_id, db)
 
+    old_status = vacancy.status
     apply_vacancy_update(db, vacancy, payload)
+    new_status = vacancy.status
+
+    create_status_change_activity(vacancy, old_status, new_status)
 
     db.add(vacancy)
     db.commit()
