@@ -3,9 +3,21 @@ from collections.abc import Iterable
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session
 
+from app.models import Activity
 from app.models.skill import Skill
 from app.models.vacancy import Vacancy
+from app.schemas.activity import ActivityKind
 from app.schemas.vacancy import VacancyCreate, VacancyFilters, VacancyUpdate
+
+VACANCY_STATUS_LABELS = {
+    "interesting": "Интересно",
+    "applied": "Отклик",
+    "interview": "Интервью",
+    "test": "Тестовое",
+    "offer": "Оффер",
+    "rejected": "Отказ",
+    "archived": "Архив",
+}
 
 
 def get_or_create_skills(db: Session, names: Iterable[str]) -> list[Skill]:
@@ -105,3 +117,36 @@ def find_vacancies(
         db.scalars(ordered_statement.offset(offset).limit(filters.page_size)).all()
     )
     return vacancies, total
+
+
+def has_status_changed(old_status: str, new_status: str) -> bool:
+    """Return whether a vacancy status differs from its previous value."""
+    return old_status != new_status
+
+
+def build_status_change_description(old_status: str, new_status: str) -> str:
+    """Build a human-readable description for a vacancy status transition."""
+    old_label = VACANCY_STATUS_LABELS.get(old_status, old_status)
+    new_label = VACANCY_STATUS_LABELS.get(new_status, new_status)
+    return f"Статус изменён: {old_label} -> {new_label}"
+
+
+def create_status_change_activity(
+    vacancy: Vacancy,
+    old_status: str,
+    new_status: str,
+) -> Activity | None:
+    """Create and attach an activity when a vacancy status has changed."""
+    if not has_status_changed(old_status, new_status):
+        return None
+
+    description = build_status_change_description(old_status, new_status)
+
+    new_activity = Activity(
+        vacancy_id=vacancy.id,
+        description=description,
+        kind=ActivityKind.STATUS_CHANGE,
+    )
+
+    vacancy.activities.append(new_activity)
+    return new_activity

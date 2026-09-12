@@ -56,3 +56,35 @@ def test_activity_requires_existing_vacancy(client: TestClient) -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Vacancy not found"
+
+
+def test_status_change_activity_is_automatic_and_immutable(
+    client: TestClient,
+) -> None:
+    """Reject manual creation, updates, and deletion of status change events."""
+    vacancy_id = create_vacancy(client)
+
+    manual_create_response = client.post(
+        f"/api/vacancies/{vacancy_id}/activities",
+        json={
+            "kind": "status_change",
+            "description": "Status changed manually",
+        },
+    )
+    status_update_response = client.patch(
+        f"/api/vacancies/{vacancy_id}",
+        json={"status": "applied"},
+    )
+    activity = client.get(f"/api/vacancies/{vacancy_id}/activities").json()[0]
+    edit_response = client.patch(
+        f"/api/vacancies/{vacancy_id}/activities/{activity['id']}",
+        json={"description": "Changed manually"},
+    )
+    delete_response = client.delete(
+        f"/api/vacancies/{vacancy_id}/activities/{activity['id']}"
+    )
+
+    assert manual_create_response.status_code == 400
+    assert status_update_response.status_code == 200
+    assert edit_response.status_code == 409
+    assert delete_response.status_code == 409

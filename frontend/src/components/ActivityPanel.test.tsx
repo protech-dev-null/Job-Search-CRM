@@ -49,6 +49,28 @@ describe('ActivityPanel', () => {
     expect(await screen.findByText('Отправил резюме')).toBeInTheDocument()
   })
 
+  it('отображает автоматическое событие смены статуса', async () => {
+    const statusChangeActivity = {
+      ...activityFixture,
+      kind: 'status_change' as const,
+      description: 'Статус изменён: Интересно -> Отклик',
+    }
+    vi.mocked(getActivities).mockResolvedValue([statusChangeActivity])
+
+    render(<ActivityPanel vacancy={vacancyFixture} onClose={vi.fn()} />)
+
+    expect(await screen.findByText('Смена статуса')).toBeInTheDocument()
+    expect(
+      screen.getByText('Статус изменён: Интересно -> Отклик'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Редактировать событие' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Удалить событие' }),
+    ).not.toBeInTheDocument()
+  })
+
   it('редактирует и удаляет существующее событие', async () => {
     const user = userEvent.setup()
     const updatedActivity = {

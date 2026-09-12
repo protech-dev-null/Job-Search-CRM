@@ -65,6 +65,14 @@ const activityKindMeta: Record<ActivityKind, ActivityKindMeta> = {
   },
 }
 
+const manualActivityKinds: Exclude<ActivityKind, 'status_change'>[] = [
+  'note',
+  'contact',
+  'interview',
+  'task',
+  'other',
+]
+
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   dateStyle: 'medium',
   timeStyle: 'short',
@@ -265,8 +273,10 @@ export function ActivityPanel({ vacancy, onClose }: ActivityPanelProps) {
                     value={kind}
                     onChange={(event) => setKind(event.target.value as ActivityKind)}
                   >
-                    {Object.entries(activityKindMeta).map(([value, meta]) => (
-                      <option key={value} value={value}>{meta.label}</option>
+                    {manualActivityKinds.map((value) => (
+                      <option key={value} value={value}>
+                        {activityKindMeta[value].label}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -340,6 +350,8 @@ export function ActivityPanel({ vacancy, onClose }: ActivityPanelProps) {
               {activities.map((activity) => {
                 const meta = activityKindMeta[activity.kind]
                 const Icon = meta.icon
+                const isAutomaticStatusChange =
+                  activity.kind === 'status_change'
                 return (
                   <li key={activity.id} className="flex gap-3">
                     <span
@@ -357,27 +369,29 @@ export function ActivityPanel({ vacancy, onClose }: ActivityPanelProps) {
                             {dateFormatter.format(new Date(activity.occurred_at))}
                           </time>
                         </div>
-                        <div className="flex shrink-0 gap-1">
-                          <button
-                            type="button"
-                            className="icon-button"
-                            onClick={() => startEditing(activity)}
-                            aria-label="Редактировать событие"
-                            title="Редактировать"
-                          >
-                            <Pencil size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            className="icon-button text-rose-600"
-                            onClick={() => handleDelete(activity)}
-                            disabled={deletingId === activity.id}
-                            aria-label="Удалить событие"
-                            title="Удалить"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
+                        {!isAutomaticStatusChange && (
+                          <div className="flex shrink-0 gap-1">
+                            <button
+                              type="button"
+                              className="icon-button"
+                              onClick={() => startEditing(activity)}
+                              aria-label="Редактировать событие"
+                              title="Редактировать"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              className="icon-button text-rose-600"
+                              onClick={() => handleDelete(activity)}
+                              disabled={deletingId === activity.id}
+                              aria-label="Удалить событие"
+                              title="Удалить"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                       <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-700">
                         {activity.description}
