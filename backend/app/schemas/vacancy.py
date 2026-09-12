@@ -142,6 +142,12 @@ class VacancyUpdate(BaseModel):
         return normalize_skill_values(value)
 
 
+class VacancyTransition(BaseModel):
+    """Payload for moving a vacancy through the defined workflow."""
+
+    status: VacancyStatus
+
+
 class VacancyRead(VacancyBase):
     """Vacancy representation returned by the API."""
 

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { deleteVacancy } from '../api/dashboard'
+import { VacancyWorkflowActions } from './VacancyWorkflowActions'
 import {
   priorityLabels,
   sourceLabels,
@@ -23,6 +24,7 @@ interface VacancyDetailPanelProps {
   onEdit: (vacancy: Vacancy) => void
   onViewActivities: (vacancy: Vacancy) => void
   onDeleted: (vacancy: Vacancy) => void
+  onTransitioned: (vacancy: Vacancy) => void
 }
 
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
@@ -52,6 +54,7 @@ export function VacancyDetailPanel({
   onEdit,
   onViewActivities,
   onDeleted,
+  onTransitioned,
 }: VacancyDetailPanelProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -191,6 +194,11 @@ export function VacancyDetailPanel({
               </p>
             )}
           </section>
+
+          <VacancyWorkflowActions
+            vacancy={vacancy}
+            onTransitioned={onTransitioned}
+          />
 
           <section>
             <h3 className="text-sm font-semibold text-zinc-900">Заметки</h3>

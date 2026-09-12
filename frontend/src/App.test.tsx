@@ -11,6 +11,7 @@ vi.mock('./api/dashboard', () => ({
   getOverdueActions: vi.fn(),
   getStats: vi.fn(),
   getVacancies: vi.fn(),
+  transitionVacancy: vi.fn(),
   updateVacancy: vi.fn(),
 }))
 

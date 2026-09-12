@@ -10,6 +10,16 @@ from app.models.vacancy import Vacancy
 from app.schemas.activity import ActivityKind
 from app.schemas.vacancy import VacancyCreate, VacancyFilters, VacancyUpdate
 
+WORKFLOW_TRANSITIONS = {
+    "interesting": {"applied"},
+    "applied": {"interview", "rejected"},
+    "interview": {"test", "rejected"},
+    "test": {"offer", "rejected"},
+    "offer": {"archived"},
+    "rejected": {"archived"},
+    "archived": set(),
+}
+
 VACANCY_STATUS_LABELS = {
     "interesting": "Интересно",
     "applied": "Отклик",
@@ -156,6 +166,11 @@ def has_status_changed(old_status: str, new_status: str) -> bool:
     return old_status != new_status
 
 
+def is_workflow_transition_allowed(old_status: str, new_status: str) -> bool:
+    """Return whether a status change is permitted by the vacancy workflow."""
+    return new_status in WORKFLOW_TRANSITIONS.get(old_status, set())
+
+
 def build_status_change_description(old_status: str, new_status: str) -> str:
     """Build a human-readable description for a vacancy status transition."""
     old_label = VACANCY_STATUS_LABELS.get(old_status, old_status)
@@ -182,3 +197,18 @@ def create_status_change_activity(
 
     vacancy.activities.append(new_activity)
     return new_activity
+
+
+def apply_workflow_transition(vacancy: Vacancy, new_status: str) -> Activity:
+    """Apply an allowed workflow transition and record its status activity."""
+    old_status = vacancy.status
+    if not is_workflow_transition_allowed(old_status, new_status):
+        raise ValueError(
+            f"Transition from {old_status} to {new_status} is not allowed."
+        )
+
+    vacancy.status = new_status
+    activity = create_status_change_activity(vacancy, old_status, new_status)
+    if activity is None:
+        raise RuntimeError("Workflow transition did not create a status activity.")
+    return activity

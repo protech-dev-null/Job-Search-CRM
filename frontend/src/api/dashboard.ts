@@ -72,3 +72,16 @@ export function completeNextAction(vacancyId: string): Promise<Vacancy> {
     { method: 'POST' },
   )
 }
+
+export function transitionVacancy(
+  vacancyId: string,
+  status: VacancyStatus,
+): Promise<Vacancy> {
+  return apiRequest<Vacancy>(
+    `/api/vacancies/${encodeURIComponent(vacancyId)}/transition`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ status }),
+    },
+  )
+}

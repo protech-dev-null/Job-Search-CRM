@@ -157,6 +157,13 @@ function App() {
     setRefreshVersion((value) => value + 1)
   }
 
+  const handleVacancyTransitioned = (vacancy: Vacancy) => {
+    setDetailVacancy((current) =>
+      current?.id === vacancy.id ? vacancy : current,
+    )
+    setRefreshVersion((value) => value + 1)
+  }
+
   return (
     <div className="min-h-screen bg-zinc-100 text-zinc-900">
       <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-zinc-200 bg-white lg:block">
@@ -328,6 +335,7 @@ function App() {
           onEdit={handleEditVacancy}
           onViewActivities={setActivityVacancy}
           onDeleted={handleVacancyDeleted}
+          onTransitioned={handleVacancyTransitioned}
         />
       )}
 

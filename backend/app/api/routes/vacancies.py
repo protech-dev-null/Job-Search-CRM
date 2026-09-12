@@ -12,10 +12,12 @@ from app.schemas.vacancy import (
     VacancyFilters,
     VacancyPage,
     VacancyRead,
+    VacancyTransition,
     VacancyUpdate,
 )
 from app.services.vacancy_service import (
     apply_vacancy_update,
+    apply_workflow_transition,
     build_vacancy,
     complete_next_action,
     create_status_change_activity,
@@ -116,6 +118,27 @@ def complete_vacancy_next_action(vacancy_id: str, db: DbSession) -> Vacancy:
         )
 
     complete_next_action(vacancy)
+    db.commit()
+    db.refresh(vacancy)
+    return vacancy
+
+
+@router.post("/{vacancy_id}/transition", response_model=VacancyRead)
+def transition_vacancy(
+    vacancy_id: str,
+    payload: VacancyTransition,
+    db: DbSession,
+) -> Vacancy:
+    """Move a vacancy through an allowed workflow transition."""
+    vacancy = get_vacancy_or_404(vacancy_id, db)
+    try:
+        apply_workflow_transition(vacancy, payload.status)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+
     db.commit()
     db.refresh(vacancy)
     return vacancy
