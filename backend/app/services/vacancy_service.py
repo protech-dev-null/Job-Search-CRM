@@ -9,6 +9,16 @@ from app.models.vacancy import Vacancy
 from app.schemas.activity import ActivityKind
 from app.schemas.vacancy import VacancyCreate, VacancyFilters, VacancyUpdate
 
+VACANCY_STATUS_LABELS = {
+    "interesting": "Интересно",
+    "applied": "Отклик",
+    "interview": "Интервью",
+    "test": "Тестовое",
+    "offer": "Оффер",
+    "rejected": "Отказ",
+    "archived": "Архив",
+}
+
 
 def get_or_create_skills(db: Session, names: Iterable[str]) -> list[Skill]:
     """Resolve canonical skills, creating missing records when necessary."""
@@ -116,7 +126,9 @@ def has_status_changed(old_status: str, new_status: str) -> bool:
 
 def build_status_change_description(old_status: str, new_status: str) -> str:
     """Build a human-readable description for a vacancy status transition."""
-    return f"Status was changed: {old_status} -> {new_status}"
+    old_label = VACANCY_STATUS_LABELS.get(old_status, old_status)
+    new_label = VACANCY_STATUS_LABELS.get(new_status, new_status)
+    return f"Статус изменён: {old_label} -> {new_label}"
 
 
 def create_status_change_activity(

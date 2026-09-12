@@ -154,7 +154,7 @@ def test_status_change_creates_activity(client: TestClient) -> None:
     assert len(activities) == 1
     assert activities[0]["vacancy_id"] == vacancy_id
     assert activities[0]["kind"] == "status_change"
-    assert activities[0]["description"] == "Status was changed: interesting -> applied"
+    assert activities[0]["description"] == "Статус изменён: Интересно -> Отклик"
     assert activities[0]["occurred_at"]
 
 

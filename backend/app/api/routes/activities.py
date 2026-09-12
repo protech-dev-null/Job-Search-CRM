@@ -8,7 +8,12 @@ from app.api.routes.vacancies import get_vacancy_or_404
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.activity import Activity
-from app.schemas.activity import ActivityCreate, ActivityRead, ActivityUpdate
+from app.schemas.activity import (
+    ActivityCreate,
+    ActivityKind,
+    ActivityRead,
+    ActivityUpdate,
+)
 
 router = APIRouter(
     prefix=f"{settings.api_prefix}/vacancies/{{vacancy_id}}/activities",
@@ -38,6 +43,24 @@ def get_activity_or_404(
     return activity
 
 
+def reject_system_activity_kind(kind: ActivityKind) -> None:
+    """Reject requests that try to create automatic status events manually."""
+    if kind is ActivityKind.STATUS_CHANGE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Status change activities are created automatically.",
+        )
+
+
+def ensure_activity_is_editable(activity: Activity) -> None:
+    """Reject changes to an automatic status event in the activity timeline."""
+    if activity.kind == ActivityKind.STATUS_CHANGE:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Status change activities cannot be modified.",
+        )
+
+
 @router.get("", response_model=list[ActivityRead])
 def list_activities(vacancy_id: str, db: DbSession) -> list[Activity]:
     """List vacancy activities from newest to oldest."""
@@ -58,6 +81,7 @@ def create_activity(
 ) -> Activity:
     """Record a new event in a vacancy history."""
     get_vacancy_or_404(vacancy_id, db)
+    reject_system_activity_kind(payload.kind)
     activity = Activity(
         vacancy_id=vacancy_id,
         **payload.model_dump(exclude_none=True),
@@ -78,6 +102,9 @@ def update_activity(
     """Partially update an event in a vacancy history."""
     get_vacancy_or_404(vacancy_id, db)
     activity = get_activity_or_404(vacancy_id, activity_id, db)
+    ensure_activity_is_editable(activity)
+    if payload.kind is not None:
+        reject_system_activity_kind(payload.kind)
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(activity, field, value)
 
@@ -95,6 +122,7 @@ def delete_activity(
     """Delete an event from a vacancy history."""
     get_vacancy_or_404(vacancy_id, db)
     activity = get_activity_or_404(vacancy_id, activity_id, db)
+    ensure_activity_is_editable(activity)
     db.delete(activity)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

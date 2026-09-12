@@ -53,7 +53,7 @@ describe('ActivityPanel', () => {
     const statusChangeActivity = {
       ...activityFixture,
       kind: 'status_change' as const,
-      description: 'Status was changed: interesting -> applied',
+      description: 'Статус изменён: Интересно -> Отклик',
     }
     vi.mocked(getActivities).mockResolvedValue([statusChangeActivity])
 
@@ -61,8 +61,14 @@ describe('ActivityPanel', () => {
 
     expect(await screen.findByText('Смена статуса')).toBeInTheDocument()
     expect(
-      screen.getByText('Status was changed: interesting -> applied'),
+      screen.getByText('Статус изменён: Интересно -> Отклик'),
     ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Редактировать событие' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Удалить событие' }),
+    ).not.toBeInTheDocument()
   })
 
   it('редактирует и удаляет существующее событие', async () => {
