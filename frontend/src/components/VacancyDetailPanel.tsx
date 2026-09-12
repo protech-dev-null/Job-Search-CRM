@@ -30,6 +30,11 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   timeStyle: 'short',
 })
 
+const deadlineFormatter = new Intl.DateTimeFormat('ru-RU', {
+  dateStyle: 'medium',
+  timeZone: 'UTC',
+})
+
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -180,6 +185,11 @@ export function VacancyDetailPanel({
               <ListTodo className="mt-1 shrink-0 text-zinc-400" size={15} aria-hidden="true" />
               {vacancy.next_action ?? 'Не назначен'}
             </p>
+            {vacancy.next_action_at && (
+              <p className="mt-2 text-sm text-zinc-500">
+                Срок: {deadlineFormatter.format(new Date(`${vacancy.next_action_at}T00:00:00Z`))}
+              </p>
+            )}
           </section>
 
           <section>

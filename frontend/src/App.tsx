@@ -7,8 +7,9 @@ import {
   RefreshCw,
   Search,
 } from 'lucide-react'
-import { getStats, getVacancies } from './api/dashboard'
+import { getOverdueActions, getStats, getVacancies } from './api/dashboard'
 import { ActivityPanel } from './components/ActivityPanel'
+import { OverdueActionsPanel } from './components/OverdueActionsPanel'
 import { StatSummary } from './components/StatSummary'
 import { VacancyDetailPanel } from './components/VacancyDetailPanel'
 import { VacancyFormModal } from './components/VacancyFormModal'
@@ -27,12 +28,14 @@ const emptyVacancyPage: VacancyPage = {
 function App() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [vacancies, setVacancies] = useState<VacancyPage>(emptyVacancyPage)
+  const [overdueActions, setOverdueActions] = useState<Vacancy[]>([])
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<VacancyStatus | ''>('')
   const [page, setPage] = useState(1)
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [isStatsLoading, setIsStatsLoading] = useState(true)
   const [isVacanciesLoading, setIsVacanciesLoading] = useState(true)
+  const [isOverdueActionsLoading, setIsOverdueActionsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formVacancy, setFormVacancy] = useState<
     Vacancy | null | undefined
@@ -90,6 +93,26 @@ function App() {
     return () => controller.abort()
   }, [deferredSearch, page, refreshVersion, status])
 
+  useEffect(() => {
+    const controller = new AbortController()
+    setIsOverdueActionsLoading(true)
+
+    getOverdueActions(controller.signal)
+      .then(setOverdueActions)
+      .catch((requestError: Error) => {
+        if (requestError.name !== 'AbortError') {
+          setError('Не удалось загрузить просроченные действия.')
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsOverdueActionsLoading(false)
+        }
+      })
+
+    return () => controller.abort()
+  }, [refreshVersion])
+
   const changeSearch = (value: string) => {
     setSearch(value)
     setPage(1)
@@ -124,6 +147,13 @@ function App() {
     if (page > 1 && vacancies.items.length === 1) {
       setPage((current) => current - 1)
     }
+    setRefreshVersion((value) => value + 1)
+  }
+
+  const handleNextActionCompleted = (vacancy: Vacancy) => {
+    setDetailVacancy((current) =>
+      current?.id === vacancy.id ? vacancy : current,
+    )
     setRefreshVersion((value) => value + 1)
   }
 
@@ -246,29 +276,36 @@ function App() {
               />
             </div>
 
-            <aside className="rounded-lg border border-zinc-200 bg-white p-4">
-              <h2 className="font-semibold">Популярные навыки</h2>
-              <div className="mt-4 space-y-3">
-                {isStatsLoading &&
-                  Array.from({ length: 5 }, (_, index) => (
-                    <div key={index} className="h-7 animate-pulse rounded bg-zinc-100" />
-                  ))}
-                {!isStatsLoading && stats?.top_skills.length === 0 && (
-                  <p className="text-sm text-zinc-500">Данных пока нет</p>
-                )}
-                {!isStatsLoading &&
-                  stats?.top_skills.map((skill) => (
-                    <div
-                      key={skill.name}
-                      className="flex items-center justify-between gap-3 text-sm"
-                    >
-                      <span className="truncate text-zinc-700">{skill.name}</span>
-                      <span className="min-w-7 rounded-md bg-teal-50 px-2 py-1 text-center font-medium text-teal-800">
-                        {skill.count}
-                      </span>
-                    </div>
-                  ))}
-              </div>
+            <aside className="space-y-5">
+              <OverdueActionsPanel
+                actions={overdueActions}
+                isLoading={isOverdueActionsLoading}
+                onCompleted={handleNextActionCompleted}
+              />
+              <section className="rounded-lg border border-zinc-200 bg-white p-4">
+                <h2 className="font-semibold">Популярные навыки</h2>
+                <div className="mt-4 space-y-3">
+                  {isStatsLoading &&
+                    Array.from({ length: 5 }, (_, index) => (
+                      <div key={index} className="h-7 animate-pulse rounded bg-zinc-100" />
+                    ))}
+                  {!isStatsLoading && stats?.top_skills.length === 0 && (
+                    <p className="text-sm text-zinc-500">Данных пока нет</p>
+                  )}
+                  {!isStatsLoading &&
+                    stats?.top_skills.map((skill) => (
+                      <div
+                        key={skill.name}
+                        className="flex items-center justify-between gap-3 text-sm"
+                      >
+                        <span className="truncate text-zinc-700">{skill.name}</span>
+                        <span className="min-w-7 rounded-md bg-teal-50 px-2 py-1 text-center font-medium text-teal-800">
+                          {skill.count}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </section>
             </aside>
           </section>
         </div>

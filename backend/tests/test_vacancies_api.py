@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from fastapi.testclient import TestClient
 
 
@@ -180,6 +182,43 @@ def test_update_without_status_change_does_not_create_activity(
     assert update_response.status_code == 200
     assert activities_response.status_code == 200
     assert activities_response.json() == []
+
+
+def test_list_overdue_actions_and_complete_next_action(client: TestClient) -> None:
+    """List past-due actions and complete one through the vacancy API."""
+    overdue_response = client.post(
+        "/api/vacancies",
+        json={
+            "company": "Northwind",
+            "position": "Frontend Developer",
+            "next_action": "Send portfolio",
+            "next_action_at": str(date.today() - timedelta(days=1)),
+        },
+    )
+    client.post(
+        "/api/vacancies",
+        json={
+            "company": "Orbit Labs",
+            "position": "Backend Developer",
+            "next_action": "Prepare interview",
+            "next_action_at": str(date.today()),
+        },
+    )
+    vacancy_id = overdue_response.json()["id"]
+
+    overdue_actions_response = client.get("/api/vacancies/overdue-actions")
+    complete_response = client.post(
+        f"/api/vacancies/{vacancy_id}/complete-next-action"
+    )
+    activities_response = client.get(f"/api/vacancies/{vacancy_id}/activities")
+
+    assert overdue_actions_response.status_code == 200
+    assert [item["id"] for item in overdue_actions_response.json()] == [vacancy_id]
+    assert complete_response.status_code == 200
+    assert complete_response.json()["next_action"] is None
+    assert complete_response.json()["next_action_at"] is None
+    assert activities_response.json()[0]["kind"] == "task"
+    assert activities_response.json()[0]["description"] == "Выполнено: Send portfolio"
 
 
 def test_delete_vacancy(client: TestClient) -> None:

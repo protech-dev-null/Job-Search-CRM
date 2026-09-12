@@ -35,6 +35,7 @@ interface FormValues {
   skills: string
   notes: string
   nextAction: string
+  nextActionAt: string
 }
 
 const emptyValues: FormValues = {
@@ -50,6 +51,7 @@ const emptyValues: FormValues = {
   skills: '',
   notes: '',
   nextAction: '',
+  nextActionAt: '',
 }
 
 function getInitialValues(vacancy: Vacancy | null): FormValues {
@@ -70,6 +72,7 @@ function getInitialValues(vacancy: Vacancy | null): FormValues {
     skills: vacancy.skills.join(', '),
     notes: vacancy.notes ?? '',
     nextAction: vacancy.next_action ?? '',
+    nextActionAt: vacancy.next_action_at ?? '',
   }
 }
 
@@ -119,6 +122,7 @@ export function VacancyFormModal({
       skills: parseSkills(values.skills),
       notes: optionalText(values.notes),
       next_action: optionalText(values.nextAction),
+      next_action_at: values.nextAction.trim() ? values.nextActionAt || null : null,
     }
 
     try {
@@ -315,6 +319,19 @@ export function VacancyFormModal({
                 value={values.nextAction}
                 onChange={(event) => updateField('nextAction', event.target.value)}
                 maxLength={240}
+              />
+            </label>
+
+            <label className="form-field">
+              <span>Дата следующего действия</span>
+              <input
+                className="control"
+                type="date"
+                value={values.nextActionAt}
+                onChange={(event) =>
+                  updateField('nextActionAt', event.target.value)
+                }
+                disabled={!values.nextAction.trim()}
               />
             </label>
 

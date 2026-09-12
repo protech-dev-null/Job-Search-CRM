@@ -38,6 +38,10 @@ export function getVacancies(
   return apiRequest<VacancyPage>(`/api/vacancies?${query}`, { signal })
 }
 
+export function getOverdueActions(signal?: AbortSignal): Promise<Vacancy[]> {
+  return apiRequest<Vacancy[]>('/api/vacancies/overdue-actions', { signal })
+}
+
 export function createVacancy(payload: VacancyCreateInput): Promise<Vacancy> {
   return apiRequest<Vacancy>('/api/vacancies', {
     method: 'POST',
@@ -59,5 +63,12 @@ export function deleteVacancy(vacancyId: string): Promise<void> {
   return apiRequest<void>(
     `/api/vacancies/${encodeURIComponent(vacancyId)}`,
     { method: 'DELETE' },
+  )
+}
+
+export function completeNextAction(vacancyId: string): Promise<Vacancy> {
+  return apiRequest<Vacancy>(
+    `/api/vacancies/${encodeURIComponent(vacancyId)}/complete-next-action`,
+    { method: 'POST' },
   )
 }
