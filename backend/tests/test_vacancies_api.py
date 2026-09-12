@@ -319,6 +319,39 @@ def test_search_vacancies_is_case_insensitive(client: TestClient) -> None:
     assert [vacancy["company"] for vacancy in response.json()["items"]] == ["CloudFox"]
 
 
+def test_sort_vacancies_by_company(client: TestClient) -> None:
+    """Order filtered vacancy results using a supported query parameter."""
+    create_filter_test_vacancies(client)
+
+    response = client.get("/api/vacancies?sort_by=company&sort_direction=asc")
+
+    assert response.status_code == 200
+    assert [vacancy["company"] for vacancy in response.json()["items"]] == [
+        "CloudFox",
+        "Marketly",
+        "Orbit Labs",
+    ]
+
+
+def test_export_vacancies_csv_applies_filters(client: TestClient) -> None:
+    """Export all matching vacancies as a spreadsheet-friendly CSV document."""
+    create_filter_test_vacancies(client)
+
+    response = client.get(
+        "/api/vacancies/export.csv?status=applied&sort_by=company&sort_direction=asc"
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert "attachment; filename=\"vacancies.csv\"" in response.headers[
+        "content-disposition"
+    ]
+    assert response.text.startswith("\ufeffКомпания,Позиция,Статус")
+    assert "Marketly,UI Developer,applied" in response.text
+    assert "Orbit Labs,React Developer,applied" in response.text
+    assert "CloudFox" not in response.text
+
+
 def test_filter_vacancies_by_skill_is_case_insensitive(client: TestClient) -> None:
     create_filter_test_vacancies(client)
 

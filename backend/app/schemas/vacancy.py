@@ -62,6 +62,22 @@ class WorkFormat(StrEnum):
     HYBRID = "hybrid"
 
 
+class VacancySortField(StrEnum):
+    """Supported fields used to sort the vacancy list."""
+
+    CREATED_AT = "created_at"
+    UPDATED_AT = "updated_at"
+    COMPANY = "company"
+    NEXT_ACTION_AT = "next_action_at"
+
+
+class SortDirection(StrEnum):
+    """Supported directions for vacancy list sorting."""
+
+    ASC = "asc"
+    DESC = "desc"
+
+
 class VacancyFilters(BaseModel):
     """Query parameters for filtering and paginating the vacancy list."""
 
@@ -71,6 +87,8 @@ class VacancyFilters(BaseModel):
     work_format: WorkFormat | None = None
     source: VacancySource | None = None
     skill: str | None = Field(default=None, max_length=80)
+    sort_by: VacancySortField = VacancySortField.CREATED_AT
+    sort_direction: SortDirection = SortDirection.DESC
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=20, ge=1, le=100)
 

@@ -1,14 +1,20 @@
 from collections.abc import Iterable
 from datetime import date
 
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, case, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models import Activity
 from app.models.skill import Skill
 from app.models.vacancy import Vacancy
 from app.schemas.activity import ActivityKind
-from app.schemas.vacancy import VacancyCreate, VacancyFilters, VacancyUpdate
+from app.schemas.vacancy import (
+    SortDirection,
+    VacancyCreate,
+    VacancyFilters,
+    VacancySortField,
+    VacancyUpdate,
+)
 
 WORKFLOW_TRANSITIONS = {
     "interesting": {"applied"},
@@ -114,13 +120,43 @@ def build_vacancy_statement(
     return statement
 
 
+def build_vacancy_ordering(filters: VacancyFilters) -> tuple[object, ...]:
+    """Build deterministic ordering expressions from validated list parameters."""
+    sortable_columns = {
+        VacancySortField.CREATED_AT: Vacancy.created_at,
+        VacancySortField.UPDATED_AT: Vacancy.updated_at,
+        VacancySortField.COMPANY: Vacancy.company,
+        VacancySortField.NEXT_ACTION_AT: Vacancy.next_action_at,
+    }
+    column = sortable_columns[filters.sort_by]
+    direction = (
+        column.asc()
+        if filters.sort_direction == SortDirection.ASC
+        else column.desc()
+    )
+
+    ordering: list[object] = []
+    if filters.sort_by == VacancySortField.NEXT_ACTION_AT:
+        ordering.append(case((Vacancy.next_action_at.is_(None), 1), else_=0))
+    ordering.extend((direction, Vacancy.created_at.desc()))
+    return tuple(ordering)
+
+
+def find_all_vacancies(db: Session, filters: VacancyFilters) -> list[Vacancy]:
+    """Return every vacancy matching filters without applying pagination."""
+    statement = build_vacancy_statement(filters).order_by(
+        *build_vacancy_ordering(filters)
+    )
+    return list(db.scalars(statement).all())
+
+
 def find_vacancies(
     db: Session,
     filters: VacancyFilters,
 ) -> tuple[list[Vacancy], int]:
     """Return one page of matching vacancies and their total count."""
     statement = build_vacancy_statement(filters)
-    ordered_statement = statement.order_by(Vacancy.created_at.desc())
+    ordered_statement = statement.order_by(*build_vacancy_ordering(filters))
 
     total = db.scalar(select(func.count()).select_from(statement.subquery())) or 0
     offset = (filters.page - 1) * filters.page_size

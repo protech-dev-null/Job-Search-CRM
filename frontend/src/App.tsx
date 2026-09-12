@@ -2,12 +2,19 @@ import { useDeferredValue, useEffect, useState } from 'react'
 import {
   BarChart3,
   BriefcaseBusiness,
+  Download,
   LayoutDashboard,
   Plus,
   RefreshCw,
   Search,
+  X,
 } from 'lucide-react'
-import { getDueActions, getStats, getVacancies } from './api/dashboard'
+import {
+  downloadVacanciesCsv,
+  getDueActions,
+  getStats,
+  getVacancies,
+} from './api/dashboard'
 import { ActivityPanel } from './components/ActivityPanel'
 import { OverdueActionsPanel } from './components/OverdueActionsPanel'
 import { StatSummary } from './components/StatSummary'
@@ -16,7 +23,14 @@ import { VacancyDetailPanel } from './components/VacancyDetailPanel'
 import { VacancyFormModal } from './components/VacancyFormModal'
 import { VacancyTable } from './components/VacancyTable'
 import { statusLabels } from './lib/vacancy'
-import type { Stats, Vacancy, VacancyPage, VacancyStatus } from './types'
+import type {
+  SortDirection,
+  Stats,
+  Vacancy,
+  VacancyPage,
+  VacancySortField,
+  VacancyStatus,
+} from './types'
 
 const emptyVacancyPage: VacancyPage = {
   items: [],
@@ -32,6 +46,8 @@ function App() {
   const [overdueActions, setOverdueActions] = useState<Vacancy[]>([])
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<VacancyStatus | ''>('')
+  const [sortBy, setSortBy] = useState<VacancySortField>('created_at')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [page, setPage] = useState(1)
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [isStatsLoading, setIsStatsLoading] = useState(true)
@@ -76,6 +92,8 @@ function App() {
         pageSize: emptyVacancyPage.page_size,
         search: deferredSearch || undefined,
         status: status || undefined,
+        sortBy,
+        sortDirection,
       },
       controller.signal,
     )
@@ -92,7 +110,7 @@ function App() {
       })
 
     return () => controller.abort()
-  }, [deferredSearch, page, refreshVersion, status])
+  }, [deferredSearch, page, refreshVersion, sortBy, sortDirection, status])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -124,6 +142,33 @@ function App() {
     setPage(1)
   }
 
+  const changeSorting = (value: string) => {
+    const [nextSortBy, nextSortDirection] = value.split(':') as [
+      VacancySortField,
+      SortDirection,
+    ]
+    setSortBy(nextSortBy)
+    setSortDirection(nextSortDirection)
+    setPage(1)
+  }
+
+  const handleExport = async () => {
+    try {
+      await downloadVacanciesCsv({
+        search: deferredSearch || undefined,
+        status: status || undefined,
+        sortBy,
+        sortDirection,
+      })
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Не удалось экспортировать вакансии.',
+      )
+    }
+  }
+
   const handleVacancySaved = (savedVacancy: Vacancy) => {
     if (formVacancy === null) {
       setPage(1)
@@ -138,6 +183,12 @@ function App() {
   const handleEditVacancy = (vacancy: Vacancy) => {
     setDetailVacancy(null)
     setFormVacancy(vacancy)
+  }
+
+  const handleViewActivities = (vacancy: Vacancy) => {
+    /** Open the timeline separately instead of stacking it on vacancy details. */
+    setDetailVacancy(null)
+    setActivityVacancy(vacancy)
   }
 
   const handleVacancyDeleted = (vacancy: Vacancy) => {
@@ -239,9 +290,11 @@ function App() {
               <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
                 <div>
                   <h2 className="font-semibold">Последние вакансии</h2>
-                  <p className="mt-0.5 text-sm text-zinc-500">От новых к старым</p>
+                  <p className="mt-0.5 text-sm text-zinc-500">
+                    Поиск, сортировка и экспорт вакансий
+                  </p>
                 </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
                   <label className="relative">
                     <span className="sr-only">Поиск вакансий</span>
                     <Search
@@ -250,12 +303,23 @@ function App() {
                       aria-hidden="true"
                     />
                     <input
-                      className="control w-full pl-9 sm:w-64"
+                      className="control w-full pl-9 pr-9 sm:w-64"
                       type="search"
                       value={search}
                       onChange={(event) => changeSearch(event.target.value)}
                       placeholder="Компания, позиция, город"
                     />
+                    {search && (
+                      <button
+                        type="button"
+                        className="icon-button absolute right-1 top-1 size-7"
+                        onClick={() => changeSearch('')}
+                        aria-label="Очистить поиск"
+                        title="Очистить поиск"
+                      >
+                        <X size={15} aria-hidden="true" />
+                      </button>
+                    )}
                   </label>
                   <label>
                     <span className="sr-only">Статус вакансии</span>
@@ -274,6 +338,29 @@ function App() {
                       ))}
                     </select>
                   </label>
+                  <label>
+                    <span className="sr-only">Сортировка вакансий</span>
+                    <select
+                      className="control w-full sm:w-48"
+                      value={`${sortBy}:${sortDirection}`}
+                      onChange={(event) => changeSorting(event.target.value)}
+                    >
+                      <option value="created_at:desc">Сначала новые</option>
+                      <option value="created_at:asc">Сначала старые</option>
+                      <option value="updated_at:desc">Недавно обновлённые</option>
+                      <option value="company:asc">Компания: А-Я</option>
+                      <option value="next_action_at:asc">Ближайшее действие</option>
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={handleExport}
+                    disabled={isVacanciesLoading}
+                  >
+                    <Download size={16} aria-hidden="true" />
+                    Экспорт CSV
+                  </button>
                 </div>
               </div>
               <VacancyTable
@@ -282,7 +369,7 @@ function App() {
                 onPageChange={setPage}
                 onView={setDetailVacancy}
                 onEdit={handleEditVacancy}
-                onViewActivities={setActivityVacancy}
+                onViewActivities={handleViewActivities}
               />
             </div>
 
@@ -336,7 +423,7 @@ function App() {
           vacancy={detailVacancy}
           onClose={() => setDetailVacancy(null)}
           onEdit={handleEditVacancy}
-          onViewActivities={setActivityVacancy}
+          onViewActivities={handleViewActivities}
           onDeleted={handleVacancyDeleted}
           onTransitioned={handleVacancyTransitioned}
         />

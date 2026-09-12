@@ -13,6 +13,14 @@ export type VacancyPriority = 'low' | 'medium' | 'high'
 
 export type WorkFormat = 'remote' | 'office' | 'hybrid'
 
+export type VacancySortField =
+  | 'created_at'
+  | 'updated_at'
+  | 'company'
+  | 'next_action_at'
+
+export type SortDirection = 'asc' | 'desc'
+
 export type ActivityKind =
   | 'status_change'
   | 'note'
