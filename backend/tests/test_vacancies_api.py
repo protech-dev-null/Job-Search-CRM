@@ -184,8 +184,8 @@ def test_update_without_status_change_does_not_create_activity(
     assert activities_response.json() == []
 
 
-def test_list_overdue_actions_and_complete_next_action(client: TestClient) -> None:
-    """List past-due actions and complete one through the vacancy API."""
+def test_list_due_actions_and_complete_next_action(client: TestClient) -> None:
+    """List due actions and complete one through the vacancy API."""
     overdue_response = client.post(
         "/api/vacancies",
         json={
@@ -206,14 +206,17 @@ def test_list_overdue_actions_and_complete_next_action(client: TestClient) -> No
     )
     vacancy_id = overdue_response.json()["id"]
 
-    overdue_actions_response = client.get("/api/vacancies/overdue-actions")
+    due_actions_response = client.get("/api/vacancies/due-actions")
     complete_response = client.post(
         f"/api/vacancies/{vacancy_id}/complete-next-action"
     )
     activities_response = client.get(f"/api/vacancies/{vacancy_id}/activities")
 
-    assert overdue_actions_response.status_code == 200
-    assert [item["id"] for item in overdue_actions_response.json()] == [vacancy_id]
+    assert due_actions_response.status_code == 200
+    assert {item["company"] for item in due_actions_response.json()} == {
+        "Northwind",
+        "Orbit Labs",
+    }
     assert complete_response.status_code == 200
     assert complete_response.json()["next_action"] is None
     assert complete_response.json()["next_action_at"] is None

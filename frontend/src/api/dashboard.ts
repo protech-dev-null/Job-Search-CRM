@@ -38,8 +38,8 @@ export function getVacancies(
   return apiRequest<VacancyPage>(`/api/vacancies?${query}`, { signal })
 }
 
-export function getOverdueActions(signal?: AbortSignal): Promise<Vacancy[]> {
-  return apiRequest<Vacancy[]>('/api/vacancies/overdue-actions', { signal })
+export function getDueActions(signal?: AbortSignal): Promise<Vacancy[]> {
+  return apiRequest<Vacancy[]>('/api/vacancies/due-actions', { signal })
 }
 
 export function createVacancy(payload: VacancyCreateInput): Promise<Vacancy> {

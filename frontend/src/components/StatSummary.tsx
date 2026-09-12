@@ -1,4 +1,11 @@
-import { BriefcaseBusiness, CalendarCheck, Handshake, Send } from 'lucide-react'
+import {
+  AlertTriangle,
+  BriefcaseBusiness,
+  CalendarCheck,
+  Clock3,
+  Handshake,
+  Send,
+} from 'lucide-react'
 import type { Stats } from '../types'
 
 interface StatSummaryProps {
@@ -31,11 +38,23 @@ const items = [
     icon: Handshake,
     accent: 'text-emerald-700 bg-emerald-50',
   },
+  {
+    label: 'Действия сегодня',
+    value: (stats: Stats) => stats.due_today,
+    icon: Clock3,
+    accent: 'text-amber-800 bg-amber-50',
+  },
+  {
+    label: 'Просрочено',
+    value: (stats: Stats) => stats.overdue_actions,
+    icon: AlertTriangle,
+    accent: 'text-rose-700 bg-rose-50',
+  },
 ]
 
 export function StatSummary({ stats, isLoading }: StatSummaryProps) {
   return (
-    <section id="analytics" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <section id="analytics" className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
       {items.map(({ label, value, icon: Icon, accent }) => (
         <article key={label} className="rounded-lg border border-zinc-200 bg-white p-4">
           <div className="flex items-center justify-between gap-3">

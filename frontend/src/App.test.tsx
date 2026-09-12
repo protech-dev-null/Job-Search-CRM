@@ -2,13 +2,13 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
-import { getOverdueActions, getStats, getVacancies } from './api/dashboard'
+import { getDueActions, getStats, getVacancies } from './api/dashboard'
 import { statsFixture, vacancyPageFixture } from './test/fixtures'
 
 vi.mock('./api/dashboard', () => ({
   createVacancy: vi.fn(),
   deleteVacancy: vi.fn(),
-  getOverdueActions: vi.fn(),
+  getDueActions: vi.fn(),
   getStats: vi.fn(),
   getVacancies: vi.fn(),
   transitionVacancy: vi.fn(),
@@ -19,7 +19,7 @@ describe('App', () => {
   beforeEach(() => {
     vi.mocked(getStats).mockResolvedValue(statsFixture)
     vi.mocked(getVacancies).mockResolvedValue(vacancyPageFixture)
-    vi.mocked(getOverdueActions).mockResolvedValue([])
+    vi.mocked(getDueActions).mockResolvedValue([])
   })
 
   it('показывает статистику и загруженные вакансии', async () => {
