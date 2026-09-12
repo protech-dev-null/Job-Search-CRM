@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -103,6 +103,7 @@ class VacancyBase(BaseModel):
     skills: list[str] = Field(default_factory=list)
     notes: str | None = None
     next_action: str | None = Field(default=None, max_length=240)
+    next_action_at: date | None = None
 
     @field_validator("skills", mode="before")
     @classmethod
@@ -132,6 +133,7 @@ class VacancyUpdate(BaseModel):
     skills: list[str] | None = None
     notes: str | None = None
     next_action: str | None = Field(default=None, max_length=240)
+    next_action_at: date | None = None
 
     @field_validator("skills", mode="before")
     @classmethod

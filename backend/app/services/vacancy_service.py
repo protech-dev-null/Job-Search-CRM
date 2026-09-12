@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from datetime import date
 
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session
@@ -117,6 +118,37 @@ def find_vacancies(
         db.scalars(ordered_statement.offset(offset).limit(filters.page_size)).all()
     )
     return vacancies, total
+
+
+def find_overdue_next_actions(db: Session, today: date) -> list[Vacancy]:
+    """Return vacancies whose next action deadline is before the given date."""
+    statement = (
+        select(Vacancy)
+        .where(
+            Vacancy.next_action.is_not(None),
+            Vacancy.next_action_at.is_not(None),
+            Vacancy.next_action_at < today,
+        )
+        .order_by(Vacancy.next_action_at.asc(), Vacancy.created_at.desc())
+    )
+    return list(db.scalars(statement).all())
+
+
+def complete_next_action(vacancy: Vacancy) -> Activity:
+    """Clear a vacancy action and record its completion in the timeline."""
+    completed_action = vacancy.next_action
+    if completed_action is None:
+        raise ValueError("Vacancy has no next action to complete.")
+
+    activity = Activity(
+        vacancy_id=vacancy.id,
+        kind=ActivityKind.TASK,
+        description=f"Выполнено: {completed_action}",
+    )
+    vacancy.next_action = None
+    vacancy.next_action_at = None
+    vacancy.activities.append(activity)
+    return activity
 
 
 def has_status_changed(old_status: str, new_status: str) -> bool:

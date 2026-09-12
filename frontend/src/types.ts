@@ -52,6 +52,7 @@ export interface Vacancy {
   skills: string[]
   notes: string | null
   next_action: string | null
+  next_action_at: string | null
   created_at: string
   updated_at: string
 }
@@ -69,6 +70,7 @@ export interface VacancyCreateInput {
   skills: string[]
   notes: string | null
   next_action: string | null
+  next_action_at: string | null
 }
 
 export type VacancyUpdateInput = Partial<VacancyCreateInput>

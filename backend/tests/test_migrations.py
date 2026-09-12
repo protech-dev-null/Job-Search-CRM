@@ -27,7 +27,7 @@ def test_upgrade_empty_database_to_head(tmp_path: Path) -> None:
         "vacancies",
         "vacancy_skills",
     }.issubset(inspector.get_table_names())
-    assert revision == "20260704_0003"
+    assert revision == "20260912_0004"
 
 
 def test_skill_migration_preserves_legacy_json_data(tmp_path: Path) -> None:

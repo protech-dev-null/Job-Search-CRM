@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -16,7 +17,9 @@ from app.schemas.vacancy import (
 from app.services.vacancy_service import (
     apply_vacancy_update,
     build_vacancy,
+    complete_next_action,
     create_status_change_activity,
+    find_overdue_next_actions,
     find_vacancies,
 )
 
@@ -68,6 +71,12 @@ def create_vacancy(payload: VacancyCreate, db: DbSession) -> Vacancy:
     return vacancy
 
 
+@router.get("/overdue-actions", response_model=list[VacancyRead])
+def list_overdue_actions(db: DbSession) -> list[Vacancy]:
+    """List vacancies with next actions overdue before today."""
+    return find_overdue_next_actions(db, date.today())
+
+
 @router.get("/{vacancy_id}", response_model=VacancyRead)
 def read_vacancy(vacancy_id: str, db: DbSession) -> Vacancy:
     """Read a single vacancy by identifier."""
@@ -93,6 +102,22 @@ def update_vacancy(
     db.commit()
     db.refresh(vacancy)
 
+    return vacancy
+
+
+@router.post("/{vacancy_id}/complete-next-action", response_model=VacancyRead)
+def complete_vacancy_next_action(vacancy_id: str, db: DbSession) -> Vacancy:
+    """Mark a vacancy's next action complete and clear its deadline."""
+    vacancy = get_vacancy_or_404(vacancy_id, db)
+    if vacancy.next_action is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Vacancy has no next action to complete.",
+        )
+
+    complete_next_action(vacancy)
+    db.commit()
+    db.refresh(vacancy)
     return vacancy
 
 

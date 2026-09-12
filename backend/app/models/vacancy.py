@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, String, Text
+from sqlalchemy import Date, DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -48,6 +48,11 @@ class Vacancy(Base):
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     next_action: Mapped[str | None] = mapped_column(String(240), nullable=True)
+    next_action_at: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+        index=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
