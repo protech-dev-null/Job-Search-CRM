@@ -30,6 +30,7 @@ describe('VacancyDetailPanel', () => {
         onEdit={onEdit}
         onViewActivities={onViewActivities}
         onDeleted={vi.fn()}
+        onTransitioned={vi.fn()}
       />,
     )
 
@@ -62,6 +63,7 @@ describe('VacancyDetailPanel', () => {
         onEdit={vi.fn()}
         onViewActivities={vi.fn()}
         onDeleted={onDeleted}
+        onTransitioned={vi.fn()}
       />,
     )
 
@@ -86,6 +88,7 @@ describe('VacancyDetailPanel', () => {
         onEdit={vi.fn()}
         onViewActivities={vi.fn()}
         onDeleted={onDeleted}
+        onTransitioned={vi.fn()}
       />,
     )
 

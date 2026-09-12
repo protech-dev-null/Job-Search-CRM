@@ -221,6 +221,47 @@ def test_list_overdue_actions_and_complete_next_action(client: TestClient) -> No
     assert activities_response.json()[0]["description"] == "Выполнено: Send portfolio"
 
 
+def test_transition_vacancy_creates_status_activity(client: TestClient) -> None:
+    """Move a vacancy through the workflow and record the status change."""
+    create_response = client.post(
+        "/api/vacancies",
+        json={"company": "Northwind", "position": "Frontend Developer"},
+    )
+    vacancy_id = create_response.json()["id"]
+
+    transition_response = client.post(
+        f"/api/vacancies/{vacancy_id}/transition",
+        json={"status": "applied"},
+    )
+    activities_response = client.get(f"/api/vacancies/{vacancy_id}/activities")
+
+    assert transition_response.status_code == 200
+    assert transition_response.json()["status"] == "applied"
+    assert activities_response.json()[0]["kind"] == "status_change"
+    assert activities_response.json()[0]["description"] == (
+        "Статус изменён: Интересно -> Отклик"
+    )
+
+
+def test_rejects_disallowed_vacancy_transition(client: TestClient) -> None:
+    """Reject a workflow action that skips the defined vacancy stages."""
+    create_response = client.post(
+        "/api/vacancies",
+        json={"company": "Northwind", "position": "Frontend Developer"},
+    )
+    vacancy_id = create_response.json()["id"]
+
+    transition_response = client.post(
+        f"/api/vacancies/{vacancy_id}/transition",
+        json={"status": "offer"},
+    )
+
+    assert transition_response.status_code == 409
+    assert transition_response.json()["detail"] == (
+        "Transition from interesting to offer is not allowed."
+    )
+
+
 def test_delete_vacancy(client: TestClient) -> None:
     create_response = client.post(
         "/api/vacancies",
