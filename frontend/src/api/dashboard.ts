@@ -1,18 +1,22 @@
-import { apiRequest } from './client'
+import { apiRequest, apiUrl } from './client'
 import type {
   Stats,
   Vacancy,
   VacancyCreateInput,
   VacancyPage,
+  SortDirection,
+  VacancySortField,
   VacancyStatus,
   VacancyUpdateInput,
 } from '../types'
 
-interface VacancyListParams {
+export interface VacancyListParams {
   page: number
   pageSize: number
   search?: string
   status?: VacancyStatus
+  sortBy?: VacancySortField
+  sortDirection?: SortDirection
 }
 
 export function getStats(signal?: AbortSignal): Promise<Stats> {
@@ -34,8 +38,42 @@ export function getVacancies(
   if (params.status) {
     query.set('status', params.status)
   }
+  if (params.sortBy) {
+    query.set('sort_by', params.sortBy)
+  }
+  if (params.sortDirection) {
+    query.set('sort_direction', params.sortDirection)
+  }
 
   return apiRequest<VacancyPage>(`/api/vacancies?${query}`, { signal })
+}
+
+export function downloadVacanciesCsv(
+  params: Pick<
+    VacancyListParams,
+    'search' | 'status' | 'sortBy' | 'sortDirection'
+  >,
+): void {
+  const query = new URLSearchParams()
+  if (params.search) {
+    query.set('search', params.search)
+  }
+  if (params.status) {
+    query.set('status', params.status)
+  }
+  if (params.sortBy) {
+    query.set('sort_by', params.sortBy)
+  }
+  if (params.sortDirection) {
+    query.set('sort_direction', params.sortDirection)
+  }
+
+  const link = document.createElement('a')
+  link.href = apiUrl(`/api/vacancies/export.csv?${query}`)
+  link.download = 'vacancies.csv'
+  document.body.append(link)
+  link.click()
+  link.remove()
 }
 
 export function getDueActions(signal?: AbortSignal): Promise<Vacancy[]> {

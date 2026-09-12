@@ -1,5 +1,10 @@
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
+export function apiUrl(path: string): string {
+  /** Build an API URL that respects the configured backend base URL. */
+  return `${apiBaseUrl}${path}`
+}
+
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
@@ -9,7 +14,7 @@ export async function apiRequest<T>(
     headers.set('Content-Type', 'application/json')
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(apiUrl(path), {
     ...options,
     headers,
   })

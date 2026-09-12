@@ -1,4 +1,6 @@
+import csv
 from datetime import date
+from io import StringIO
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -21,6 +23,7 @@ from app.services.vacancy_service import (
     build_vacancy,
     complete_next_action,
     create_status_change_activity,
+    find_all_vacancies,
     find_due_next_actions,
     find_vacancies,
 )
@@ -42,6 +45,52 @@ def get_vacancy_or_404(vacancy_id: str, db: Session) -> Vacancy:
     return vacancy
 
 
+def build_vacancies_csv(vacancies: list[Vacancy]) -> str:
+    """Serialize vacancies into an UTF-8 CSV document for spreadsheet imports."""
+    output = StringIO(newline="")
+    writer = csv.writer(output, lineterminator="\n")
+    writer.writerow(
+        [
+            "Компания",
+            "Позиция",
+            "Статус",
+            "Приоритет",
+            "Формат работы",
+            "Локация",
+            "Источник",
+            "Навыки",
+            "Следующее действие",
+            "Дата следующего действия",
+            "Ссылка",
+            "Заметки",
+            "Создано",
+            "Обновлено",
+        ]
+    )
+    for vacancy in vacancies:
+        writer.writerow(
+            [
+                vacancy.company,
+                vacancy.position,
+                vacancy.status,
+                vacancy.priority,
+                vacancy.work_format,
+                vacancy.location or "",
+                vacancy.source,
+                ", ".join(skill.name for skill in vacancy.skills),
+                vacancy.next_action or "",
+                vacancy.next_action_at.isoformat()
+                if vacancy.next_action_at is not None
+                else "",
+                vacancy.url or "",
+                vacancy.notes or "",
+                vacancy.created_at.isoformat(),
+                vacancy.updated_at.isoformat(),
+            ]
+        )
+    return "\ufeff" + output.getvalue()
+
+
 @router.get("", response_model=VacancyPage)
 def list_vacancies(db: DbSession, filters: VacancyFilterParams) -> VacancyPage:
     """List one page of vacancies matching optional query filters."""
@@ -54,6 +103,19 @@ def list_vacancies(db: DbSession, filters: VacancyFilterParams) -> VacancyPage:
         page=filters.page,
         page_size=filters.page_size,
         pages=pages,
+    )
+
+
+@router.get("/export.csv")
+def export_vacancies_csv(db: DbSession, filters: VacancyFilterParams) -> Response:
+    """Export all filtered vacancies as a spreadsheet-friendly CSV file."""
+    csv_content = build_vacancies_csv(find_all_vacancies(db, filters))
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": 'attachment; filename="vacancies.csv"',
+        },
     )
 
 
