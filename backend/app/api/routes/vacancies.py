@@ -21,7 +21,7 @@ from app.services.vacancy_service import (
     build_vacancy,
     complete_next_action,
     create_status_change_activity,
-    find_overdue_next_actions,
+    find_due_next_actions,
     find_vacancies,
 )
 
@@ -73,10 +73,10 @@ def create_vacancy(payload: VacancyCreate, db: DbSession) -> Vacancy:
     return vacancy
 
 
-@router.get("/overdue-actions", response_model=list[VacancyRead])
-def list_overdue_actions(db: DbSession) -> list[Vacancy]:
-    """List vacancies with next actions overdue before today."""
-    return find_overdue_next_actions(db, date.today())
+@router.get("/due-actions", response_model=list[VacancyRead])
+def list_due_actions(db: DbSession) -> list[Vacancy]:
+    """List vacancies with next actions due today or overdue."""
+    return find_due_next_actions(db, date.today())
 
 
 @router.get("/{vacancy_id}", response_model=VacancyRead)

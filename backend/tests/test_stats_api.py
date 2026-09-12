@@ -22,6 +22,18 @@ def test_stats_for_empty_database(client: TestClient) -> None:
             "high": 0,
         },
         "top_skills": [],
+        "due_today": 0,
+        "overdue_actions": 0,
+        "applied_to_interview_conversion": None,
+        "average_days_by_status": {
+            "interesting": 0.0,
+            "applied": 0.0,
+            "interview": 0.0,
+            "test": 0.0,
+            "offer": 0.0,
+            "rejected": 0.0,
+            "archived": 0.0,
+        },
     }
 
 
@@ -79,3 +91,26 @@ def test_stats_aggregate_vacancies(client: TestClient) -> None:
         {"name": "Python", "count": 1},
         {"name": "TypeScript", "count": 1},
     ]
+    assert data["due_today"] == 0
+    assert data["overdue_actions"] == 0
+    assert data["applied_to_interview_conversion"] == 50.0
+
+
+def test_stats_include_structured_workflow_conversion(client: TestClient) -> None:
+    """Calculate conversion after a workflow action reaches interview."""
+    create_response = client.post(
+        "/api/vacancies",
+        json={"company": "Orbit Labs", "position": "React Developer"},
+    )
+    vacancy_id = create_response.json()["id"]
+
+    client.post(f"/api/vacancies/{vacancy_id}/transition", json={"status": "applied"})
+    client.post(
+        f"/api/vacancies/{vacancy_id}/transition",
+        json={"status": "interview"},
+    )
+    response = client.get("/api/stats")
+
+    assert response.status_code == 200
+    assert response.json()["applied_to_interview_conversion"] == 100.0
+    assert response.json()["average_days_by_status"]["applied"] >= 0

@@ -44,6 +44,18 @@ export const statsFixture: Stats = {
     high: 1,
   },
   top_skills: [{ name: 'Python', count: 1 }],
+  due_today: 0,
+  overdue_actions: 0,
+  applied_to_interview_conversion: null,
+  average_days_by_status: {
+    interesting: 0,
+    applied: 0,
+    interview: 0,
+    test: 0,
+    offer: 0,
+    rejected: 0,
+    archived: 0,
+  },
 }
 
 export const activityFixture: Activity = {
@@ -51,6 +63,8 @@ export const activityFixture: Activity = {
   vacancy_id: vacancyFixture.id,
   kind: 'note',
   description: 'Отправил резюме',
+  from_status: null,
+  to_status: null,
   occurred_at: '2026-07-02T12:00:00Z',
   created_at: '2026-07-02T12:00:00Z',
 }

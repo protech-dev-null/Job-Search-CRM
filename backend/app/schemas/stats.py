@@ -15,3 +15,7 @@ class StatsRead(BaseModel):
     by_status: dict[str, int]
     by_priority: dict[str, int]
     top_skills: list[SkillStat]
+    due_today: int = Field(ge=0)
+    overdue_actions: int = Field(ge=0)
+    applied_to_interview_conversion: float | None = Field(default=None, ge=0, le=100)
+    average_days_by_status: dict[str, float]

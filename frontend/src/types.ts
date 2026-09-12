@@ -26,6 +26,8 @@ export interface Activity {
   vacancy_id: string
   kind: ActivityKind
   description: string
+  from_status: VacancyStatus | null
+  to_status: VacancyStatus | null
   occurred_at: string
   created_at: string
 }
@@ -93,4 +95,8 @@ export interface Stats {
   by_status: Record<VacancyStatus, number>
   by_priority: Record<VacancyPriority, number>
   top_skills: SkillStat[]
+  due_today: number
+  overdue_actions: number
+  applied_to_interview_conversion: number | null
+  average_days_by_status: Record<VacancyStatus, number>
 }

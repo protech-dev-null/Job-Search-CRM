@@ -41,6 +41,8 @@ class ActivityRead(ActivityBase):
 
     id: str
     vacancy_id: str
+    from_status: str | None
+    to_status: str | None
     occurred_at: datetime
     created_at: datetime
 

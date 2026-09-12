@@ -130,14 +130,14 @@ def find_vacancies(
     return vacancies, total
 
 
-def find_overdue_next_actions(db: Session, today: date) -> list[Vacancy]:
-    """Return vacancies whose next action deadline is before the given date."""
+def find_due_next_actions(db: Session, today: date) -> list[Vacancy]:
+    """Return vacancies whose next action is due today or overdue."""
     statement = (
         select(Vacancy)
         .where(
             Vacancy.next_action.is_not(None),
             Vacancy.next_action_at.is_not(None),
-            Vacancy.next_action_at < today,
+            Vacancy.next_action_at <= today,
         )
         .order_by(Vacancy.next_action_at.asc(), Vacancy.created_at.desc())
     )
@@ -193,6 +193,8 @@ def create_status_change_activity(
         vacancy_id=vacancy.id,
         description=description,
         kind=ActivityKind.STATUS_CHANGE,
+        from_status=old_status,
+        to_status=new_status,
     )
 
     vacancy.activities.append(new_activity)

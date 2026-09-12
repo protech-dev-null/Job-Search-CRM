@@ -7,10 +7,11 @@ import {
   RefreshCw,
   Search,
 } from 'lucide-react'
-import { getOverdueActions, getStats, getVacancies } from './api/dashboard'
+import { getDueActions, getStats, getVacancies } from './api/dashboard'
 import { ActivityPanel } from './components/ActivityPanel'
 import { OverdueActionsPanel } from './components/OverdueActionsPanel'
 import { StatSummary } from './components/StatSummary'
+import { WorkflowAnalyticsPanel } from './components/WorkflowAnalyticsPanel'
 import { VacancyDetailPanel } from './components/VacancyDetailPanel'
 import { VacancyFormModal } from './components/VacancyFormModal'
 import { VacancyTable } from './components/VacancyTable'
@@ -97,7 +98,7 @@ function App() {
     const controller = new AbortController()
     setIsOverdueActionsLoading(true)
 
-    getOverdueActions(controller.signal)
+    getDueActions(controller.signal)
       .then(setOverdueActions)
       .catch((requestError: Error) => {
         if (requestError.name !== 'AbortError') {
@@ -230,6 +231,8 @@ function App() {
           )}
 
           <StatSummary stats={stats} isLoading={isStatsLoading} />
+
+          <WorkflowAnalyticsPanel stats={stats} isLoading={isStatsLoading} />
 
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
             <div id="vacancies" className="min-w-0 space-y-3">

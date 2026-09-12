@@ -14,6 +14,8 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   timeZone: 'UTC',
 })
 
+const today = new Date().toLocaleDateString('en-CA')
+
 function formatDeadline(value: string): string {
   return dateFormatter.format(new Date(`${value}T00:00:00Z`))
 }
@@ -47,7 +49,7 @@ export function OverdueActionsPanel({
     <section className="rounded-lg border border-amber-200 bg-white p-4">
       <div className="flex items-center gap-2">
         <AlertTriangle className="text-amber-600" size={18} aria-hidden="true" />
-        <h2 className="font-semibold">Просроченные действия</h2>
+        <h2 className="font-semibold">Действия на сегодня</h2>
       </div>
 
       <div className="mt-4 space-y-3">
@@ -57,7 +59,7 @@ export function OverdueActionsPanel({
           ))}
 
         {!isLoading && actions.length === 0 && (
-          <p className="text-sm text-zinc-500">Просроченных действий нет</p>
+          <p className="text-sm text-zinc-500">Действий на сегодня нет</p>
         )}
 
         {!isLoading &&
@@ -76,7 +78,7 @@ export function OverdueActionsPanel({
                 {vacancy.next_action_at && (
                   <p className="mt-1 inline-flex items-center gap-1 text-xs text-amber-700">
                     <Clock3 size={13} aria-hidden="true" />
-                    {formatDeadline(vacancy.next_action_at)}
+                    {vacancy.next_action_at === today ? 'Сегодня' : 'Просрочено'}: {formatDeadline(vacancy.next_action_at)}
                   </p>
                 )}
               </div>
