@@ -43,6 +43,7 @@ FastAPI routes -> services -> SQLAlchemy -> SQLite / PostgreSQL
 - [Local backend and frontend setup](docs/local-development.md)
 - [Database, Alembic, and PostgreSQL](docs/database.md)
 - [Seeding the database with demo data](docs/seed-data.md)
+- [Manual deployment with Selectel](docs/selectel-deployment.md)
 
 ## Project structure
 
