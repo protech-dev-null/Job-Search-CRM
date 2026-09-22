@@ -1,0 +1,15 @@
+{$CRM_DOMAIN} {
+    encode zstd gzip
+    basic_auth {
+        import /run/secrets/web_auth
+    }
+    @backend path /api /api/* /health /docs /docs/* /redoc /openapi.json
+    handle @backend {
+        reverse_proxy api:8000
+    }
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}
