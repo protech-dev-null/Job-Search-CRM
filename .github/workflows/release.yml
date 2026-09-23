@@ -6,25 +6,50 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: Update the VDS after publishing images
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
-# This workflow only builds images. Deployment will need its own non-cancelling lock.
+# Never cancel a main workflow while it may be migrating production data.
 concurrency:
   group: images-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - id: version
+        run: echo "tag=sha-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
   backend:
     uses: ./.github/workflows/backend-ci.yml
 
   frontend:
     uses: ./.github/workflows/frontend-ci.yml
 
+  deploy-scripts:
+    name: Deployment script checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: |
+          bash -n deploy/deploy-release.sh
+          bash -n deploy/ssh-deploy-command.sh
+          python3 deploy/tests/test_deploy.py
+
   images:
     name: Build and scan images
-    needs: [backend, frontend]
+    needs: [backend, frontend, release, deploy-scripts]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -48,9 +73,10 @@ jobs:
         id: image
         env:
           SERVICE: ${{ matrix.service }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
         run: |
           repository="ghcr.io/${GITHUB_REPOSITORY,,}/${SERVICE}"
-          tag="sha-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          tag="$RELEASE_TAG"
           echo "ref=${repository}:${tag}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
@@ -97,3 +123,42 @@ jobs:
           docker push "$IMAGE_REF"
           digest_ref=$(docker image inspect "$IMAGE_REF" --format '{{index .RepoDigests 0}}')
           printf 'Published: `%s`\n\nImmutable reference: `%s`\n' "$IMAGE_REF" "$digest_ref" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to VDS
+    needs: [release, images]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      ((github.event_name == 'workflow_dispatch' && inputs.deploy) ||
+       (github.event_name == 'push' && vars.AUTO_DEPLOY == 'true'))
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    concurrency:
+      group: crm-production-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Deploy published release over SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.VDS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VDS_KNOWN_HOSTS }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY" && test -n "$KNOWN_HOSTS"
+          ssh_dir=$(mktemp -d)
+          trap 'rm -rf -- "$ssh_dir"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" > "$ssh_dir/key"
+          printf '%s\n' "$KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          ssh -i "$ssh_dir/key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$ssh_dir/known_hosts" \
+            -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=6 \
+            root@135.106.220.160 "deploy $RELEASE_TAG"
+
+      - name: Verify public HTTPS endpoint
+        run: |
+          code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+            --retry 3 --retry-all-errors --max-time 20 https://roman-job-crm.duckdns.org/)
+          test "$code" = 401
+          echo 'VDS deployment and public HTTPS check succeeded.' >> "$GITHUB_STEP_SUMMARY"
