@@ -1,19 +1,10 @@
 name: Frontend CI
 
 on:
-  push:
-    branches:
-      - main
-      - "feature/**"
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-ci.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-ci.yml"
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   frontend:
@@ -31,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.11.0"
+          node-version: "22"
           cache: yarn
           cache-dependency-path: frontend/yarn.lock
 
