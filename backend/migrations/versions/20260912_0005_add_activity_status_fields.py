@@ -22,9 +22,7 @@ def upgrade() -> None:
         batch_op.add_column(
             sa.Column("from_status", sa.String(length=40), nullable=True)
         )
-        batch_op.add_column(
-            sa.Column("to_status", sa.String(length=40), nullable=True)
-        )
+        batch_op.add_column(sa.Column("to_status", sa.String(length=40), nullable=True))
 
 
 def downgrade() -> None:

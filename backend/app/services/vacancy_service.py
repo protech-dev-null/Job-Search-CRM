@@ -130,9 +130,7 @@ def build_vacancy_ordering(filters: VacancyFilters) -> tuple[object, ...]:
     }
     column = sortable_columns[filters.sort_by]
     direction = (
-        column.asc()
-        if filters.sort_direction == SortDirection.ASC
-        else column.desc()
+        column.asc() if filters.sort_direction == SortDirection.ASC else column.desc()
     )
 
     ordering: list[object] = []

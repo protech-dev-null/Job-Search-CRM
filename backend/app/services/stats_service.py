@@ -55,23 +55,29 @@ def get_top_skills(db: Session, limit: int) -> list[SkillStat]:
 
 def count_actions_due_on(db: Session, due_date: date) -> int:
     """Count vacancies with a next action scheduled for the given date."""
-    return db.scalar(
-        select(func.count(Vacancy.id)).where(
-            Vacancy.next_action.is_not(None),
-            Vacancy.next_action_at == due_date,
+    return (
+        db.scalar(
+            select(func.count(Vacancy.id)).where(
+                Vacancy.next_action.is_not(None),
+                Vacancy.next_action_at == due_date,
+            )
         )
-    ) or 0
+        or 0
+    )
 
 
 def count_overdue_actions(db: Session, today: date) -> int:
     """Count vacancies with a next action deadline before the given date."""
-    return db.scalar(
-        select(func.count(Vacancy.id)).where(
-            Vacancy.next_action.is_not(None),
-            Vacancy.next_action_at.is_not(None),
-            Vacancy.next_action_at < today,
+    return (
+        db.scalar(
+            select(func.count(Vacancy.id)).where(
+                Vacancy.next_action.is_not(None),
+                Vacancy.next_action_at.is_not(None),
+                Vacancy.next_action_at < today,
+            )
         )
-    ) or 0
+        or 0
+    )
 
 
 def calculate_applied_to_interview_conversion(db: Session) -> float | None:
@@ -124,10 +130,13 @@ def calculate_average_days_by_status(db: Session, now: datetime) -> dict[str, fl
     for events in status_events.values():
         for index, (status, started_at) in enumerate(events):
             ended_at = events[index + 1][1] if index + 1 < len(events) else now
-            duration_days = max(
-                (ended_at - started_at).total_seconds(),
-                0,
-            ) / 86_400
+            duration_days = (
+                max(
+                    (ended_at - started_at).total_seconds(),
+                    0,
+                )
+                / 86_400
+            )
             durations[status].append(duration_days)
 
     legacy_vacancies = db.scalars(

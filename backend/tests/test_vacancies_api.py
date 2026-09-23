@@ -207,9 +207,7 @@ def test_list_due_actions_and_complete_next_action(client: TestClient) -> None:
     vacancy_id = overdue_response.json()["id"]
 
     due_actions_response = client.get("/api/vacancies/due-actions")
-    complete_response = client.post(
-        f"/api/vacancies/{vacancy_id}/complete-next-action"
-    )
+    complete_response = client.post(f"/api/vacancies/{vacancy_id}/complete-next-action")
     activities_response = client.get(f"/api/vacancies/{vacancy_id}/activities")
 
     assert due_actions_response.status_code == 200
@@ -343,9 +341,10 @@ def test_export_vacancies_csv_applies_filters(client: TestClient) -> None:
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/csv")
-    assert "attachment; filename=\"vacancies.csv\"" in response.headers[
-        "content-disposition"
-    ]
+    assert (
+        'attachment; filename="vacancies.csv"'
+        in response.headers["content-disposition"]
+    )
     assert response.text.startswith("\ufeffКомпания,Позиция,Статус")
     assert "Marketly,UI Developer,applied" in response.text
     assert "Orbit Labs,React Developer,applied" in response.text
