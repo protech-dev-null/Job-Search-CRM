@@ -50,6 +50,8 @@ cp compose.ghcr.yaml "$release_dir/previous.yaml"
 printf 'services:\n  api:\n    image: %s\n  web:\n    image: %s\n' "$api_ref" "$web_ref" > "$release_dir/candidate.yaml"
 candidate() { "${base[@]}" -f "$release_dir/candidate.yaml" "$@"; }
 candidate config --quiet
+# Validate the run flags with the installed Compose before any downtime.
+candidate run --rm --no-deps --help > /dev/null
 backup="$release_dir/database.dump"
 phase=before-stop
 failed() {
@@ -77,7 +79,8 @@ mv "$backup.partial" "$backup"
 echo "Backup created: $backup"
 
 phase=migration
-candidate run --rm --no-deps --no-build --pull never api alembic upgrade head
+# compose run has no --no-build option; the digest image was pulled above.
+candidate run --rm --no-deps api alembic upgrade head
 phase=start
 # Persist the selected configuration even if startup needs manual recovery.
 cp "$release_dir/candidate.yaml" compose.ghcr.yaml.next

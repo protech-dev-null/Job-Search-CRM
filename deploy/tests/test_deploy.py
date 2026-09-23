@@ -17,6 +17,7 @@ STUBS = r'''
 docker() {
   echo "$*" >> "$TEST_LOG"
   case "$*" in
+    *" run "*"--no-build"*) echo 'unknown flag: --no-build' >&2; return 1 ;;
     "pull "*) [[ $SCENARIO != pull-failure ]] ;;
     "image inspect "*) printf '%s@sha256:%064d\n' "${3%%:*}" 1 ;;
     *"pg_dump "*) [[ $SCENARIO != backup-failure ]] && echo DUMP ;;

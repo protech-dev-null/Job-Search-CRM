@@ -1,0 +1,46 @@
+name: Bootstrap VDS deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      restore_existing:
+        description: Start the existing API and web containers stopped by the failed deployment
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crm-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    env:
+      ROOT_SSH: ${{ secrets.ROOT_SSH }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check bootstrap payload before connecting
+        run: bash production/bootstrap-check.sh
+
+      - name: Install deployment protocol v2
+        env:
+          ADMIN_KEY: ${{ secrets.VDS_BOOTSTRAP_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VDS_KNOWN_HOSTS }}
+        run: bash production/bootstrap-install.sh
+
+      - name: Check the regular deployment key and optionally recover existing containers
+        env:
+          DEPLOY_KEY: ${{ secrets.VDS_SSH_KEY }}
+          ADMIN_KEY: ${{ secrets.VDS_BOOTSTRAP_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VDS_KNOWN_HOSTS }}
+          RESTORE_EXISTING: ${{ inputs.restore_existing }}
+        run: bash production/bootstrap-verify.sh
