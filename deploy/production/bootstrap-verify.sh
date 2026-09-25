@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
-: "${root@$VDS_IP:?Set VDS_IP from production secrets}"
+: "${VDS_IP:?Set VDS_IP from production secrets}"
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-cd "$script_dir/.."
+cd "$script_dir/../.."
 test -n "$DEPLOY_KEY"
 ssh_dir=$(mktemp -d)
 trap 'rm -rf -- "$ssh_dir"' EXIT

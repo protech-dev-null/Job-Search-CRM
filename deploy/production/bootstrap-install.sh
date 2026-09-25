@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
-: "${root@$VDS_IP:?Set root@$VDS_IP from production secrets}"
+: "${VDS_IP:?Set VDS_IP from production secrets}"
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-cd "$script_dir/.."
+cd "$script_dir/../.."
 test -n "$ADMIN_KEY" || { echo '::error::Add temporary production secret VDS_BOOTSTRAP_SSH_KEY'; exit 1; }
 test -n "$KNOWN_HOSTS"
 test -n "$VDS_IP"
