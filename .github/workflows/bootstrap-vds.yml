@@ -22,7 +22,7 @@ jobs:
     environment: production
     timeout-minutes: 10
     env:
-      ROOT_SSH: ${{ secrets.ROOT_SSH }}
+      VDS_IP: ${{ secrets.VDS_IP }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,7 +35,7 @@ jobs:
         env:
           ADMIN_KEY: ${{ secrets.VDS_BOOTSTRAP_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.VDS_KNOWN_HOSTS }}
-        run: bash production/bootstrap-install.sh
+        run: bash deploy/production/bootstrap-install.sh
 
       - name: Check the regular deployment key and optionally recover existing containers
         env:
@@ -43,4 +43,4 @@ jobs:
           ADMIN_KEY: ${{ secrets.VDS_BOOTSTRAP_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.VDS_KNOWN_HOSTS }}
           RESTORE_EXISTING: ${{ inputs.restore_existing }}
-        run: bash production/bootstrap-verify.sh
+        run: bash deploy/production/bootstrap-verify.sh

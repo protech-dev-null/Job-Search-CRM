@@ -149,16 +149,18 @@ jobs:
           DEPLOY_KEY: ${{ secrets.VDS_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.VDS_KNOWN_HOSTS }}
           RELEASE_TAG: ${{ needs.release.outputs.tag }}
+          VDS_IP: ${{ secrets.VDS_IP }}
         run: |
           set -euo pipefail
           umask 077
           test -n "$DEPLOY_KEY" || { echo '::error::production secret VDS_SSH_KEY is empty'; exit 1; }
           test -n "$KNOWN_HOSTS" || { echo '::error::production secret VDS_KNOWN_HOSTS is empty'; exit 1; }
+          test -n "$VDS_IP" || { echo '::error::production secret $VDS_IP is empty'; exit 1; }
           ssh_dir=$(mktemp -d)
           trap 'rm -rf -- "$ssh_dir"' EXIT
           printf '%s\n' "$DEPLOY_KEY" | tr -d '\r' > "$ssh_dir/key"
           printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > "$ssh_dir/known_hosts"
-          if ! ssh-keygen -F 135.106.220.160 -f "$ssh_dir/known_hosts" > "$ssh_dir/host_match"; then
+          if ! ssh-keygen -F $VDS_IP -f "$ssh_dir/known_hosts" > "$ssh_dir/host_match"; then
             echo '::error::VDS_KNOWN_HOSTS has no entry for 135.106.220.160. Update the secret in environment production; use the complete known_hosts line, not a SHA256 fingerprint or a .pub key alone.'
             exit 1
           fi
@@ -177,7 +179,7 @@ jobs:
           ssh -i "$ssh_dir/key" -o IdentitiesOnly=yes -o BatchMode=yes \
             -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$ssh_dir/known_hosts" \
             -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=6 \
-            $ROOT_SSH "deploy-v2 $RELEASE_TAG $script_hash"
+            root@$VDS_IP "deploy-v2 $RELEASE_TAG $script_hash"
 
       - name: Verify public HTTPS endpoint
         run: |
