@@ -161,7 +161,7 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" | tr -d '\r' > "$ssh_dir/key"
           printf '%s\n' "$KNOWN_HOSTS" | tr -d '\r' > "$ssh_dir/known_hosts"
           if ! ssh-keygen -F $VDS_IP -f "$ssh_dir/known_hosts" > "$ssh_dir/host_match"; then
-            echo '::error::VDS_KNOWN_HOSTS has no entry for 135.106.220.160. Update the secret in environment production; use the complete known_hosts line, not a SHA256 fingerprint or a .pub key alone.'
+            echo '::error::VDS_KNOWN_HOSTS has no entry for $VDS_IP. Update the secret in environment production; use the complete known_hosts line, not a SHA256 fingerprint or a .pub key alone.'
             exit 1
           fi
           awk '$2 == "ssh-ed25519" { print }' "$ssh_dir/host_match" > "$ssh_dir/ed25519"
